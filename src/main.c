@@ -18,7 +18,50 @@
  * Link to author: https://github.com/Sqydev
 */
 
+#include <stdio.h>
+#include <stdlib.h>
+
+#include <sys/ioctl.h>
+#include <unistd.h>
+
+
+typedef struct {
+	struct winsize termdim; 
+	
+	struct {
+		int argc;
+		char** argv;
+	} args;
+} CoreData;
+
+CoreData DATA;
+
+void Setup(int *argc, char** *argv) {
+	DATA.args.argc = *argc;
+	DATA.args.argv = *argv;
+
+	ioctl(STDOUT_FILENO, TIOCGWINSZ, &DATA.termdim);
+
+	write(STDOUT_FILENO, "\033[?1049h", 8);
+	write(STDOUT_FILENO, "\033[?25l", 6);
+}
+
+void Randix() {
+	printf("terminal: %dx%d", DATA.termdim.ws_row, DATA.termdim.ws_col);
+	fflush(stdout);
+	sleep(1);
+}
+
+void Cleanup() {
+	write(STDOUT_FILENO, "\033[?25h", 6);
+	write(STDOUT_FILENO, "\033[?1049l", 8);
+}
+
 int main(int argc, char** argv) {
-	(void)argc;
-	(void)argv;
+	Setup(&argc, &argv);
+
+	Randix();
+
+	Cleanup();
+	return EXIT_SUCCESS;
 }

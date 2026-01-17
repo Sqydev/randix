@@ -1,5 +1,5 @@
 CC      := gcc
-CFLAGS  := -Wall -Wextra -O2
+CFLAGS  := -Wall -Wextra -Werror -O2
 SRC_DIR := src
 BIN_DIR := compiled
 TARGET  := randix
