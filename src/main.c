@@ -18,27 +18,54 @@
  * Link to author: https://github.com/Sqydev
 */
 
+#include <getopt.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 #include <sys/ioctl.h>
 #include <unistd.h>
 
-
 typedef struct {
 	struct winsize termdim; 
 	
 	struct {
-		int argc;
-		char** argv;
+		int refreshRate;
 	} args;
 } CoreData;
 
 CoreData DATA;
 
 void Setup(int *argc, char** *argv) {
-	DATA.args.argc = *argc;
-	DATA.args.argv = *argv;
+	DATA.args.refreshRate = 500; // In ms
+
+	struct option long_options[] = {
+		{"help", no_argument, NULL, 'h'},
+		{"refresh-rate", required_argument, NULL, 'r'},
+		{NULL, 0, NULL, 0}
+	};
+
+	int optchar;
+	while((optchar = getopt_long(*argc, *argv, "hr:", long_options, NULL)) != EOF) {
+		switch(optchar) {
+			case 'h':
+				write(STDOUT_FILENO, 
+		  		"Usage:\n"
+		  		"randix [options]\n\n"
+		  		"Options:\n"
+		  		"	-h, --help                 Get help.\n"
+		  		"	-r, --refresh-rate[N]      Set refresh rate of the animation to N fps.\n"
+		  		, 7 + 18 + 9 + 38 + 72);
+				exit(EXIT_SUCCESS);
+
+			case 'r':
+				DATA.args.refreshRate = atoi(optarg);
+				break;
+			
+			default:
+                write(STDOUT_FILENO, "Unknown option, type -h or --help to get help\n", 47);
+				exit(EXIT_FAILURE);
+		}
+	}
 
 	ioctl(STDOUT_FILENO, TIOCGWINSZ, &DATA.termdim);
 
@@ -47,7 +74,8 @@ void Setup(int *argc, char** *argv) {
 }
 
 void Randix() {
-	printf("terminal: %dx%d", DATA.termdim.ws_row, DATA.termdim.ws_col);
+	printf("terminal: %dx%d\n", DATA.termdim.ws_row, DATA.termdim.ws_col);
+	printf("rr: %d\n", DATA.args.refreshRate);
 	fflush(stdout);
 	sleep(1);
 }
