@@ -21,12 +21,15 @@
 #include <getopt.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <sys/ioctl.h>
 #include <unistd.h>
 
 typedef struct {
-	struct winsize termdim; 
+	struct winsize termdim;
+
+	char* backbuff;
 	
 	struct {
 		int refreshRate;
@@ -36,7 +39,7 @@ typedef struct {
 CoreData DATA;
 
 void Setup(int *argc, char** *argv) {
-	DATA.args.refreshRate = 500; // In ms
+	DATA.args.refreshRate = 125; // In ms
 
 	struct option long_options[] = {
 		{"help", no_argument, NULL, 'h'},
@@ -69,15 +72,35 @@ void Setup(int *argc, char** *argv) {
 
 	ioctl(STDOUT_FILENO, TIOCGWINSZ, &DATA.termdim);
 
+	DATA.backbuff = malloc(
+		(((DATA.termdim.ws_col + 1) * DATA.termdim.ws_row)
+		+ DATA.termdim.ws_col
+		+ 3 /* this one is for \033[H */
+		+ 3 /* for \033[J */)
+		* sizeof(char));
+
 	write(STDOUT_FILENO, "\033[?1049h", 8);
 	write(STDOUT_FILENO, "\033[?25l", 6);
+	write(STDOUT_FILENO, "\033[2J", 4);
 }
 
 void Randix() {
-	printf("terminal: %dx%d\n", DATA.termdim.ws_row, DATA.termdim.ws_col);
-	printf("rr: %d\n", DATA.args.refreshRate);
-	fflush(stdout);
-	sleep(1);
+	while(1) {
+		memcpy(DATA.backbuff, "\033[H\033[J", 6);
+
+		for(int y = 0; y < DATA.termdim.ws_row; y++) {
+			for(int x = 0; x < DATA.termdim.ws_col; x++) {
+				DATA.backbuff[3 + 3 + y * (DATA.termdim.ws_col + 1) + x] = rand() % 95 + 32;
+			}
+			if(y != DATA.termdim.ws_row - 1) {
+				DATA.backbuff[3 + 3 + y * (DATA.termdim.ws_col + 1) + DATA.termdim.ws_col] = '\n';
+			}
+		}
+
+		write(STDOUT_FILENO, DATA.backbuff, 3 + 3 + DATA.termdim.ws_row * (DATA.termdim.ws_col + 1));
+
+		usleep(1000 * DATA.args.refreshRate);
+	}
 }
 
 void Cleanup() {
