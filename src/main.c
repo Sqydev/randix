@@ -18,6 +18,7 @@
  * Link to author: https://github.com/Sqydev
 */
 
+#include <time.h>
 #include <getopt.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -26,20 +27,17 @@
 #include <sys/ioctl.h>
 #include <unistd.h>
 
-typedef struct {
-	struct winsize termdim;
+#include "./coredata.h"
 
-	char* backbuff;
-	
-	struct {
-		int refreshRate;
-	} args;
-} CoreData;
+double GetTime() {
+	struct timespec time_struct;
+	clock_gettime(CLOCK_MONOTONIC, &time_struct);
 
-CoreData DATA;
+	return time_struct.tv_sec + time_struct.tv_nsec / 1e9;
+}
 
 void Setup(int *argc, char** *argv) {
-	DATA.args.refreshRate = 125; // In ms
+	DATA.args.refreshRate = 62; // In ms
 
 	struct option long_options[] = {
 		{"help", no_argument, NULL, 'h'},
@@ -56,12 +54,14 @@ void Setup(int *argc, char** *argv) {
 		  		"randix [options]\n\n"
 		  		"Options:\n"
 		  		"	-h, --help                 Get help.\n"
-		  		"	-r, --refresh-rate[N]      Set refresh rate of the animation to N fps.\n"
+		  		"	-r, --refresh-rate[N]      Set refresh rate of the animation to N milliseconds.\n"
 		  		, 7 + 18 + 9 + 38 + 72);
 				exit(EXIT_SUCCESS);
 
 			case 'r':
 				DATA.args.refreshRate = atoi(optarg);
+				if(DATA.args.refreshRate <= 0) { DATA.args.refreshRate = 1; }
+
 				break;
 			
 			default:
@@ -79,31 +79,53 @@ void Setup(int *argc, char** *argv) {
 		+ 3 /* for \033[J */)
 		* sizeof(char));
 
+	
+	DATA.time.previousTime = 0;
+	DATA.time.currentTime = 0;
+
+	DATA.time.frameTime = DATA.args.refreshRate / 1000.0;
+
 	write(STDOUT_FILENO, "\033[?1049h", 8);
 	write(STDOUT_FILENO, "\033[?25l", 6);
 	write(STDOUT_FILENO, "\033[2J", 4);
 }
 
-void Randix() {
-	while(1) {
-		memcpy(DATA.backbuff, "\033[H\033[J", 6);
+void RenderFrame() {
+	memcpy(DATA.backbuff, "\033[H\033[J", 6);
 
-		for(int y = 0; y < DATA.termdim.ws_row; y++) {
-			for(int x = 0; x < DATA.termdim.ws_col; x++) {
-				DATA.backbuff[3 + 3 + y * (DATA.termdim.ws_col + 1) + x] = rand() % 95 + 32;
-			}
-			if(y != DATA.termdim.ws_row - 1) {
-				DATA.backbuff[3 + 3 + y * (DATA.termdim.ws_col + 1) + DATA.termdim.ws_col] = '\n';
-			}
+	for(int y = 0; y < DATA.termdim.ws_row; y++) {
+		for(int x = 0; x < DATA.termdim.ws_col; x++) {
+			DATA.backbuff[3 + 3 + y * (DATA.termdim.ws_col + 1) + x] = rand() % 95 + 32;
 		}
-
-		write(STDOUT_FILENO, DATA.backbuff, 3 + 3 + DATA.termdim.ws_row * (DATA.termdim.ws_col + 1));
-
-		usleep(1000 * DATA.args.refreshRate);
+		if(y != DATA.termdim.ws_row - 1) {
+			DATA.backbuff[3 + 3 + y * (DATA.termdim.ws_col + 1) + DATA.termdim.ws_col] = '\n';
+		}
 	}
 }
 
-void Cleanup() {
+void Randix() {
+	while(1) {
+		double frameStart = GetTime();
+
+		RenderFrame();
+
+		write(STDOUT_FILENO, DATA.backbuff, 3 + 3 + DATA.termdim.ws_row * (DATA.termdim.ws_col + 1));
+
+		double frameEnd = GetTime();
+
+		double sleepTime = DATA.time.frameTime - (frameEnd - frameStart);
+		if(sleepTime > 0) {
+			struct timespec time_struct;
+			time_struct.tv_sec = (time_t)sleepTime;
+			// sleepTime - sleepTime but tv_sec one will be clamped to nearest int
+			time_struct.tv_nsec = (sleepTime - time_struct.tv_sec) * 1e9;
+
+			nanosleep(&time_struct, NULL);
+		}
+	}
+}
+
+void CleanUp() {
 	write(STDOUT_FILENO, "\033[?25h", 6);
 	write(STDOUT_FILENO, "\033[?1049l", 8);
 }
@@ -113,6 +135,6 @@ int main(int argc, char** argv) {
 
 	Randix();
 
-	Cleanup();
+	CleanUp();
 	return EXIT_SUCCESS;
 }
