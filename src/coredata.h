@@ -18,7 +18,7 @@ typedef struct {
 	} sigs;
 	
 	struct {
-		int refreshRate;
+		double refreshRate;
 	} args;
 
 	struct {
