@@ -33,7 +33,6 @@
 
 CoreData DATA;
 
-
 void RenderFrame() {
 	memcpy(DATA.backbuff, "\033[H\033[J", 6);
 
@@ -64,7 +63,7 @@ void Randix() {
 
 		RenderFrame();
 
-		write(STDOUT_FILENO, DATA.backbuff, 3 + 3 + DATA.termdim.ws_row * (DATA.termdim.ws_col + 1));
+		write(STDOUT_FILENO, DATA.backbuff, backbuffSize(&DATA));
 
 		double frameEnd = GetTime();
 
