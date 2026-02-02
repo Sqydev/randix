@@ -3,9 +3,12 @@
 
 #include <signal.h>
 #include <sys/ioctl.h>
+#include <termio.h>
 
 typedef struct {
 	struct winsize termdim;
+	struct termios old_termios;
+	struct termios new_termios;
 
 	char* backbuff;
 

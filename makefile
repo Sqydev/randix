@@ -57,6 +57,8 @@ build: $(OUT)
 local-build:
 	$(MAKE) PROFILE=local LIBC=glibc CFLAGS="$(BASE_CFLAGS) $(REL_CFLAGS)" LDFLAGS="" build
 
+test-build: san-build check-build
+
 san-build:
 	$(MAKE) PROFILE=san LIBC=glibc CFLAGS="$(BASE_CFLAGS) $(DEV_CFLAGS)" LDFLAGS="-fsanitize=address,undefined" build
 
