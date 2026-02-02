@@ -33,18 +33,87 @@
 
 CoreData DATA;
 
+int RenderFrame() {
+	if (!DATA.backbuff) return 0;
 
-void RenderFrame() {
-	memcpy(DATA.backbuff, "\033[H\033[J", 6);
+	int posPointer = 0;
+
+	posPointer += snprintf(DATA.backbuff + posPointer, backbuffSize(&DATA) - posPointer, "\033[H\033[J");
 
 	for(int y = 0; y < DATA.termdim.ws_row; y++) {
 		for(int x = 0; x < DATA.termdim.ws_col; x++) {
-			DATA.backbuff[3 + 3 + y * (DATA.termdim.ws_col + 1) + x] = rand() % 95 + 32;
+			char har = rand() % 95 + 32;
+			
+			switch(DATA.args.colors) {
+				case 0: {
+					posPointer += snprintf(
+						DATA.backbuff + posPointer,
+						backbuffSize(&DATA) - posPointer,
+						"%c", har
+					);
+					
+					break;
+				}
+				case 1: {
+					unsigned char color = (rand() % 8) + 30; // From 30 to 37
+					
+					posPointer += snprintf(
+						DATA.backbuff + posPointer,
+						backbuffSize(&DATA) - posPointer,
+						"\033[%dm%c", color, har);
+
+					break;
+				}
+				case 2: {
+					unsigned char color = (rand() % 8) + 30; // From 30 to 37
+					unsigned char colorB = (rand() % 8) + 90; // From 90 to 97
+					bool colorDeterment = rand() % 2;
+
+					if(colorDeterment == true) {
+						color = colorB;
+					}
+					
+					posPointer += snprintf(
+						DATA.backbuff + posPointer,
+						backbuffSize(&DATA) - posPointer,
+						"\033[%dm%c", color, har);
+
+					break;
+				}
+				case 3: {
+					unsigned char color = rand() % 256;
+
+					posPointer += snprintf(
+						DATA.backbuff + posPointer,
+						backbuffSize(&DATA) - posPointer,
+						"\033[38;5;%dm%c", color, har
+					);
+
+					break;
+				}
+				case 4: {
+					unsigned char r = rand() % 256;
+					unsigned char g = rand() % 256;
+					unsigned char b = rand() % 256;
+
+					posPointer += snprintf(
+						DATA.backbuff + posPointer,
+						backbuffSize(&DATA) - posPointer,
+						"\033[38;2;%d;%d;%dm%c", r, g, b, har
+					);
+
+					break;
+				}
+			}
 		}
+
+		posPointer += snprintf(DATA.backbuff + posPointer, backbuffSize(&DATA) - posPointer, "\033[0m");
 		if(y != DATA.termdim.ws_row - 1) {
-			DATA.backbuff[3 + 3 + y * (DATA.termdim.ws_col + 1) + DATA.termdim.ws_col] = '\n';
+			posPointer += snprintf(DATA.backbuff + posPointer, backbuffSize(&DATA) - posPointer, "\n");
 		}
 	}
+
+	return posPointer;
 }
 
 void Randix() {
@@ -62,9 +131,9 @@ void Randix() {
 			DATA.backbuff = realloc(DATA.backbuff, backbuffSize(&DATA));
 		}
 
-		RenderFrame();
-
-		write(STDOUT_FILENO, DATA.backbuff, 3 + 3 + DATA.termdim.ws_row * (DATA.termdim.ws_col + 1));
+		// PinPointer becouse it sounds funny
+		int pinPointer = RenderFrame();
+		write(STDOUT_FILENO, DATA.backbuff, pinPointer);
 
 		double frameEnd = GetTime();
 
@@ -88,6 +157,7 @@ void CleanUp() {
 
 	tcsetattr(STDIN_FILENO, TCSANOW, &DATA.old_termios);
 
+	write(STDOUT_FILENO, "\033[0m", 3);
 	write(STDOUT_FILENO, "\033[?25h", 6);
 	write(STDOUT_FILENO, "\033[?1049l", 8);
 }
