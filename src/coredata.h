@@ -4,6 +4,7 @@
 #include <signal.h>
 #include <sys/ioctl.h>
 #include <termio.h>
+#include <stdbool.h>
 
 typedef struct {
 	struct winsize termdim;
@@ -22,6 +23,7 @@ typedef struct {
 	
 	struct {
 		double refreshRate;
+		bool colors;
 	} args;
 
 	struct {

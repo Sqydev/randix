@@ -1,6 +1,7 @@
 #include <getopt.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 #include <unistd.h>
 #include <sys/ioctl.h>
@@ -13,6 +14,8 @@
 
 void DataSetup() {
 	DATA.args.refreshRate = 62; // In ms
+	
+	DATA.args.colors = false;
 
 	ioctl(STDOUT_FILENO, TIOCGWINSZ, &DATA.termdim);
 
@@ -32,7 +35,7 @@ void OptsSetup(int *argc, char** *argv) {
 	};
 
 	int optchar;
-	while((optchar = getopt_long(*argc, *argv, "hr:", long_options, NULL)) != EOF) {
+	while((optchar = getopt_long(*argc, *argv, "hr:c", long_options, NULL)) != EOF) {
 		switch(optchar) {
 			case 'h':
 				write(STDOUT_FILENO, 
@@ -41,7 +44,8 @@ void OptsSetup(int *argc, char** *argv) {
 		  		"Options:\n"
 		  		"	-h, --help                 Get help.\n"
 		  		"	-r, --refresh-rate[N]      Set refresh rate of the animation to N milliseconds.\n"
-		  		, 7 + 18 + 9 + 38 + 72);
+		  		"	-c, --colors               Make your life colorful and trun on the colors.\n"
+		  		, 7 + 18 + 9 + 38 + 72 + 76);
 				exit(EXIT_SUCCESS);
 
 			case 'r':
@@ -49,9 +53,13 @@ void OptsSetup(int *argc, char** *argv) {
 				if(DATA.args.refreshRate <= 0) { DATA.args.refreshRate = 1; }
 
 				break;
+
+			case 'c':
+				DATA.args.colors = true;
+				break;
 			
 			default:
-                write(STDOUT_FILENO, "Unknown option, type -h or --help to get help\n", 47);
+				write(STDOUT_FILENO, "Unknown option, type -h or --help to get help\n", 47);
 				exit(EXIT_FAILURE);
 		}
 	}

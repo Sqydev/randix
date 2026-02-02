@@ -5,13 +5,15 @@
 
 #include "./coredata.h"
 
+
 static inline size_t backbuffSize(const CoreData *DATA) {
-	return (
-    	((DATA->termdim.ws_col + 1) * DATA->termdim.ws_row)
-    	+ DATA->termdim.ws_col
-    	+ 3  /* \033[H */
-    	+ 3  /* \033[J */
-    ) * sizeof(char);
+    size_t bytesPerChar = 24; 
+	size_t total = bytesPerChar * DATA->termdim.ws_col * DATA->termdim.ws_row;
+
+    total += 6; // \033[H\033[J
+
+    return total;
 }
+
 
 #endif
