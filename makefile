@@ -1,26 +1,17 @@
-# Global Settings
-
+# Global settings
 MAKEFLAGS += --no-builtin-rules --warn-undefined-variables
 .SUFFIXES:
 
 CC ?= gcc
-ifneq ($(shell command -v ccache 2>/dev/null),)
-  CC := ccache $(CC)
-endif
 
+# Flags
 BASE_CFLAGS := -Wall -Wextra -Werror
-DEV_CFLAGS  := -Og -g3 -fno-omit-frame-pointer \
-               -fsanitize=address,undefined
+DEV_CFLAGS  := -Og -g3 -fno-omit-frame-pointer -fsanitize=address,undefined
 REL_CFLAGS  := -O2
 
-BASE_LDFLAGS :=
-DEV_LDFLAGS  := -fsanitize=address,undefined
-REL_LDFLAGS  :=
-
 PROFILE ?= local
-LIBC    ?= glibc   # glibc | musl | static-musl
+LIBC    ?= glibc
 
-# libc-specific flags
 ifeq ($(LIBC),static-musl)
   LIBC_CFLAGS  := -static
   LIBC_LDFLAGS := -static
@@ -30,129 +21,89 @@ else
 endif
 
 CFLAGS  ?= $(BASE_CFLAGS) $(REL_CFLAGS) $(LIBC_CFLAGS)
-LDFLAGS ?= $(BASE_LDFLAGS) $(REL_LDFLAGS) $(LIBC_LDFLAGS)
+LDFLAGS ?= $(LIBC_LDFLAGS)
 
+# Paths
 SRC_DIR := src
 OBJ_DIR := obj
 BIN_DIR := compiled
 TARGET  := randix
 
-# Profiles that go into compiled/test
-TEST_PROFILES := san check
+OBJ_SUBDIR := $(OBJ_DIR)/$(PROFILE)-$(LIBC)
 
-ifeq ($(filter $(PROFILE),$(TEST_PROFILES)),)
+ifeq ($(filter $(PROFILE),san check),)
   BIN_SUBDIR := $(PROFILE)
 else
   BIN_SUBDIR := test
 endif
 
-SRC := $(sort $(wildcard $(SRC_DIR)/**/*.c) $(wildcard $(SRC_DIR)/*.c))
-OBJ := $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/$(PROFILE)-$(LIBC)/%.o,$(SRC))
 OUT := $(BIN_DIR)/$(BIN_SUBDIR)/$(TARGET)-$(PROFILE)-$(LIBC)
 
-# Phony 
+# Sources
+SRC := $(sort $(shell find $(SRC_DIR) -name '*.c'))
+OBJ := $(patsubst $(SRC_DIR)/%.c,$(OBJ_SUBDIR)/%.o,$(SRC))
+DEP := $(OBJ:.o=.d)
 
-.PHONY: all build local san check test-build \
-        bleeding bleeding-musl \
-        normal normal-musl \
-        stable stable-musl \
-        static-musl \
-        clean clean-all
+.PHONY: all build local-build san-build check-build \
+        docker-bleeding docker-normal docker-stable \
+        docker-bleeding-musl docker-normal-musl docker-stable-musl \
+        docker-static-musl clean clean-all
 
-all: local test-build \
-     bleeding bleeding-musl \
-     normal normal-musl \
-     stable stable-musl \
-     static-musl
-
-# Local / Test Targets 
+# WAŻNE: Tu musi być wszystko w jednej linii lub poprawnie łamane backslashem
+all: local-build san-build check-build docker-bleeding docker-normal docker-stable docker-bleeding-musl docker-normal-musl docker-stable-musl docker-static-musl
 
 build: $(OUT)
 
-local:
-	$(MAKE) PROFILE=local LIBC=glibc \
-	    CFLAGS="$(BASE_CFLAGS) $(REL_CFLAGS)" \
-	    LDFLAGS="$(BASE_LDFLAGS) $(REL_LDFLAGS)" \
-	    build
+local-build:
+	$(MAKE) PROFILE=local LIBC=glibc CFLAGS="$(BASE_CFLAGS) $(REL_CFLAGS)" LDFLAGS="" build
 
-san:
-	$(MAKE) PROFILE=san LIBC=glibc \
-	    CFLAGS="$(BASE_CFLAGS) $(DEV_CFLAGS)" \
-	    LDFLAGS="$(BASE_LDFLAGS) $(DEV_LDFLAGS)" \
-	    build
+san-build:
+	$(MAKE) PROFILE=san LIBC=glibc CFLAGS="$(BASE_CFLAGS) $(DEV_CFLAGS)" LDFLAGS="-fsanitize=address,undefined" build
 
-check:
-	$(MAKE) PROFILE=check LIBC=$(LIBC) \
-	    CFLAGS="$(CFLAGS)" \
-	    LDFLAGS="$(LDFLAGS)" \
-	    build
+check-build:
+	$(MAKE) PROFILE=check LIBC=glibc build
 
-# Meta target: sanitizer + check
-test-build: san check
-
-# Core Build 
-
+# Core rules
 $(OUT): $(OBJ)
-	@mkdir -p $(dir $@)
+	@mkdir -p $(@D)
 	$(CC) $(CFLAGS) $(OBJ) -o $@ $(LDFLAGS)
 
-$(OBJ_DIR)/$(PROFILE)-$(LIBC)/%.o: $(SRC_DIR)/%.c
-	@mkdir -p $(dir $@)
+$(OBJ_SUBDIR)/%.o: $(SRC_DIR)/%.c
+	@mkdir -p $(@D)
 	$(CC) $(CFLAGS) -MMD -MP -c $< -o $@
 
--include $(OBJ:.o=.d)
+-include $(DEP)
 
-# Glibc (Docker)
+# Docker helper variables
+UID := $(shell id -u)
+GID := $(shell id -g)
+DOCKER_USER := --rm -u $(UID):$(GID) -v "$(shell pwd)":/src -w /src
+DOCKER_ROOT := --rm -v "$(shell pwd)":/src -w /src
+FIX_PERMS   := ; chown -R $(UID):$(GID) $(OBJ_DIR) $(BIN_DIR)
 
-bleeding:
-	docker run --rm -v "$(shell pwd)":/src -w /src \
-	  gcc:latest \
-	  make PROFILE=bleeding LIBC=glibc build
+docker-bleeding:
+	docker run $(DOCKER_USER) gcc:latest $(MAKE) PROFILE=bleeding LIBC=glibc build
 
-normal:
-	docker run --rm -v "$(shell pwd)":/src -w /src \
-	  gcc:11 \
-	  make PROFILE=normal LIBC=glibc build
+docker-normal:
+	docker run $(DOCKER_USER) gcc:11 $(MAKE) PROFILE=normal LIBC=glibc build
 
-stable:
-	docker run --rm -v "$(shell pwd)":/src -w /src \
-	  ubuntu:18.04 \
-	  bash -c "apt update && apt install -y build-essential && \
-	           make PROFILE=stable LIBC=glibc build"
+docker-stable:
+	docker run $(DOCKER_USER) gcc:7 $(MAKE) PROFILE=stable LIBC=glibc build
 
-# Musl (Docker, Dynamic)
+docker-bleeding-musl:
+	docker run $(DOCKER_ROOT) alpine:latest sh -c "apk add --no-cache build-base musl-dev && $(MAKE) PROFILE=bleeding LIBC=musl build $(FIX_PERMS)"
 
-bleeding-musl:
-	docker run --rm -v "$(shell pwd)":/src -w /src \
-	  alpine:latest \
-	  sh -c "apk add --no-cache build-base musl-dev && \
-	         make PROFILE=bleeding LIBC=musl build"
+docker-normal-musl:
+	docker run $(DOCKER_ROOT) alpine:latest sh -c "apk add --no-cache build-base musl-dev && $(MAKE) PROFILE=normal LIBC=musl build $(FIX_PERMS)"
 
-normal-musl:
-	docker run --rm -v "$(shell pwd)":/src -w /src \
-	  alpine:latest \
-	  sh -c "apk add --no-cache build-base musl-dev && \
-	         make PROFILE=normal LIBC=musl build"
+docker-stable-musl:
+	docker run $(DOCKER_ROOT) alpine:3.19 sh -c "apk add --no-cache build-base musl-dev && $(MAKE) PROFILE=stable LIBC=musl build $(FIX_PERMS)"
 
-stable-musl:
-	docker run --rm -v "$(shell pwd)":/src -w /src \
-	  alpine:3.19 \
-	  sh -c "apk add --no-cache build-base musl-dev && \
-	         make PROFILE=stable LIBC=musl build"
-
-# Musl (Docker, Static)
-
-static-musl:
-	docker run --rm -v "$(shell pwd)":/src -w /src \
-	  alpine:3.19 \
-	  sh -c "apk add --no-cache build-base musl-dev && \
-	         make PROFILE=static LIBC=static-musl build"
-
-# Cleanup
-
-clean:
-	rm -rf $(OBJ_DIR)/$(PROFILE)-$(LIBC)
-	rm -rf $(BIN_DIR)/$(PROFILE) $(BIN_DIR)/test
+docker-static-musl:
+	docker run $(DOCKER_ROOT) alpine:3.19 sh -c "apk add --no-cache build-base musl-dev && $(MAKE) PROFILE=static LIBC=static-musl build $(FIX_PERMS)"
 
 clean-all:
 	rm -rf $(OBJ_DIR) $(BIN_DIR)
+
+clean:
+	rm -rf $(OBJ_SUBDIR)
