@@ -44,21 +44,66 @@ int RenderFrame() {
 		for(int x = 0; x < DATA.termdim.ws_col; x++) {
 			char har = rand() % 95 + 32;
 			
-			if(DATA.args.colors == false) {
-				posPointer += snprintf(
-					DATA.backbuff + posPointer,
-					backbuffSize(&DATA) - posPointer,
-					"%c", har
-				);
-			}
-			else if(DATA.args.colors == true) {
-				unsigned char color = rand() % 256;
+			switch(DATA.args.colors) {
+				case 0: {
+					posPointer += snprintf(
+						DATA.backbuff + posPointer,
+						backbuffSize(&DATA) - posPointer,
+						"%c", har
+					);
+					
+					break;
+				}
+				case 1: {
+					unsigned char color = (rand() % 8) + 30; // From 30 to 37
+					
+					posPointer += snprintf(
+						DATA.backbuff + posPointer,
+						backbuffSize(&DATA) - posPointer,
+						"\033[%dm%c", color, har);
 
-				posPointer += snprintf(
-					DATA.backbuff + posPointer,
-					backbuffSize(&DATA) - posPointer,
-					"\033[38;5;%dm%c", color, har
-				);
+					break;
+				}
+				case 2: {
+					unsigned char color = (rand() % 8) + 30; // From 30 to 37
+					unsigned char colorB = (rand() % 8) + 90; // From 90 to 97
+					bool colorDeterment = rand() % 2;
+
+					if(colorDeterment == true) {
+						color = colorB;
+					}
+					
+					posPointer += snprintf(
+						DATA.backbuff + posPointer,
+						backbuffSize(&DATA) - posPointer,
+						"\033[%dm%c", color, har);
+
+					break;
+				}
+				case 3: {
+					unsigned char color = rand() % 256;
+
+					posPointer += snprintf(
+						DATA.backbuff + posPointer,
+						backbuffSize(&DATA) - posPointer,
+						"\033[38;5;%dm%c", color, har
+					);
+
+					break;
+				}
+				case 4: {
+					unsigned char r = rand() % 256;
+					unsigned char g = rand() % 256;
+					unsigned char b = rand() % 256;
+
+					posPointer += snprintf(
+						DATA.backbuff + posPointer,
+						backbuffSize(&DATA) - posPointer,
+						"\033[38;2;%d;%d;%dm%c", r, g, b, har
+					);
+
+					break;
+				}
 			}
 		}
 

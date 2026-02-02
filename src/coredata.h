@@ -23,7 +23,7 @@ typedef struct {
 	
 	struct {
 		double refreshRate;
-		bool colors;
+		int colors;
 	} args;
 
 	struct {
