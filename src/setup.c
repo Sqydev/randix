@@ -12,11 +12,13 @@
 #include "./setup.h"
 #include "./signals.h"
 #include "backbuff.h"
+#include "bits/getopt_core.h"
 
 void DataSetup() {
 	DATA.args.refreshRate = 62; // In ms
 	
-	DATA.args.colors = 0;
+	DATA.args.colorsQuality = 1;
+	DATA.args.colorsType = 1;
 
 	ioctl(STDOUT_FILENO, TIOCGWINSZ, &DATA.termdim);
 
@@ -32,22 +34,44 @@ void OptsSetup(int *argc, char** *argv) {
 	struct option long_options[] = {
 		{"help", no_argument, NULL, 'h'},
 		{"refresh-rate", required_argument, NULL, 'r'},
-		{"colors", required_argument, NULL, 'c'},
+		{"color-quality", required_argument, NULL, 't'},
+		{"color-type", required_argument, NULL, 't'},
 		{NULL, 0, NULL, 0}
 	};
 
 	int optchar;
-	while((optchar = getopt_long(*argc, *argv, "hr:c:", long_options, NULL)) != EOF) {
+	while((optchar = getopt_long(*argc, *argv, "hr:cq:t:", long_options, NULL)) != EOF) {
 		switch(optchar) {
 			case 'h': {
 				const char* help =
 					"Usage:\n"
-		  			"randix [options]\n\n"
-		  			"Options:\n"
-		  			"	-h, --help                 Get help.\n"
-		  			"	-r, --refresh-rate[N]      Set refresh rate of the animation to N milliseconds.\n"
-		  			"	-c, --colors[N]            Make your life colorful and turn on the colors. 0 in non, 1 is 8 colors, 2 is 16, 3 is 255 and 4 in true color mode\n";
+					"  randix [options]\n\n"
 
+					"Options:\n"
+					"  -h, --help\n"
+					"      Show this help and exit.\n\n"
+				
+					"  -r, --refresh-rate <ms>\n"
+					"      Frame refresh rate in milliseconds (min: 1).\n\n"
+				
+					"  -cq <level>\n"
+					"      Color quality / palette:\n"
+					"        0  no colors\n"
+					"        1  8-color ANSI (standard)\n"
+					"        2  16-color ANSI (bright)\n"
+					"        3  256-color ANSI\n"
+					"        4  TrueColor (24-bit RGB)\n\n"
+
+					"  -ct <mode>\n"
+					"      Color application mode:\n"
+					"        1  foreground only\n"
+					"        2  background only\n"
+					"        3  foreground + background\n"
+					"        4  background fill (space character)\n\n"
+	
+					"Examples:\n"
+					"  randix -c -q 3 -t 1      256-color foreground\n"
+					"  randix -c -q 4 -t 4      TrueColor background fill\n";
 				write(STDOUT_FILENO, help, strlen(help));
 				exit(EXIT_SUCCESS);
 			}
@@ -66,13 +90,21 @@ void OptsSetup(int *argc, char** *argv) {
 			}
 
 			case 'c': {
-				if(optarg == NULL) {
-					write(STDOUT_FILENO, "Option -c requires an argument\n", 31);
-					exit(EXIT_FAILURE);
-				}
-				DATA.args.colors = atoi(optarg);
-				if(DATA.args.colors < 0) { DATA.args.colors = 0; }
-				if(DATA.args.colors > 4) { DATA.args.colors = 4; }
+				break;
+			}
+
+			case 'q': {
+				DATA.args.colorsQuality = atoi(optarg);
+				if(DATA.args.colorsQuality < 0) { DATA.args.colorsQuality = 0; }
+				if(DATA.args.colorsQuality > 4) { DATA.args.colorsQuality = 4; }
+
+				break;
+			}
+
+			case 't': {
+				DATA.args.colorsType = atoi(optarg);
+				if(DATA.args.colorsType < 1) { DATA.args.colorsType = 1; }
+				if(DATA.args.colorsType > 4) { DATA.args.colorsType = 4; }
 
 				break;
 			}
