@@ -38,13 +38,13 @@ int RenderFrame() {
 
 	int posPointer = 0;
 
-	posPointer += snprintf(DATA.backbuff + posPointer, backbuffSize(&DATA) - posPointer, "\033[H\033[J");
+	posPointer += snprintf(DATA.backbuff + posPointer, backbuffSize(&DATA) - posPointer, "\033[H");
 
 	for(int y = 0; y < DATA.termdim.ws_row; y++) {
 		for(int x = 0; x < DATA.termdim.ws_col; x++) {
 			char har = rand() % 95 + 32;
 			
-			switch(DATA.args.colors) {
+			switch(DATA.args.colorsQuality) {
 				case 0: {
 					posPointer += snprintf(
 						DATA.backbuff + posPointer,
@@ -55,39 +55,129 @@ int RenderFrame() {
 					break;
 				}
 				case 1: {
-					unsigned char color = (rand() % 8) + 30; // From 30 to 37
-					
-					posPointer += snprintf(
-						DATA.backbuff + posPointer,
-						backbuffSize(&DATA) - posPointer,
-						"\033[%dm%c", color, har);
+					/*
+					 * Ok, so. in this esc seq:
+					 * For fg: 30 is black, 31 is red and so on up to 37
+					 * For bg its the same but + 10. So 40 is black, 41 is red and so on up to 47.
+					*/
+
+					unsigned char color = (rand() % 8) + 30;
+					if(DATA.args.colorsType > 1) {
+						if(DATA.args.colorsType == 2) {
+							color += 10;
+						}
+						else {
+							posPointer += snprintf(
+								DATA.backbuff + posPointer,
+								backbuffSize(&DATA) - posPointer,
+								"\033[%dm", (rand() % 8) + 40
+							);
+						}
+					}
+
+					if(DATA.args.colorsType != 4) {
+						posPointer += snprintf(
+							DATA.backbuff + posPointer,
+							backbuffSize(&DATA) - posPointer,
+							"\033[%dm%c", color, har
+						);
+					}
+					else {
+						posPointer += snprintf(
+							DATA.backbuff + posPointer,
+							backbuffSize(&DATA) - posPointer,
+							"\033[%dm ", color + 10
+						);
+					}
 
 					break;
 				}
 				case 2: {
-					unsigned char color = (rand() % 8) + 30; // From 30 to 37
-					unsigned char colorB = (rand() % 8) + 90; // From 90 to 97
+					/*
+					 * Same as in case 1
+					*/
+					
+					unsigned char color = (rand() % 8) + 30;
+					unsigned char colorB = (rand() % 8) + 90;
 					bool colorDeterment = rand() % 2;
 
 					if(colorDeterment == true) {
 						color = colorB;
 					}
-					
-					posPointer += snprintf(
-						DATA.backbuff + posPointer,
-						backbuffSize(&DATA) - posPointer,
-						"\033[%dm%c", color, har);
 
+					if(DATA.args.colorsType > 1) {
+						if(DATA.args.colorsType == 2) {
+							color += 10;
+						}
+						else {
+							posPointer += snprintf(
+								DATA.backbuff + posPointer,
+								backbuffSize(&DATA) - posPointer,
+								"\033[%dm", (rand() % 8) + 40
+							);
+						}
+					}
+
+					if(DATA.args.colorsType != 4) {
+						posPointer += snprintf(
+							DATA.backbuff + posPointer,
+							backbuffSize(&DATA) - posPointer,
+							"\033[%dm%c", color, har
+						);
+					}
+					else {
+						posPointer += snprintf(
+							DATA.backbuff + posPointer,
+							backbuffSize(&DATA) - posPointer,
+							"\033[%dm ", color + 10
+						);
+					}
+					
 					break;
 				}
 				case 3: {
 					unsigned char color = rand() % 256;
 
-					posPointer += snprintf(
-						DATA.backbuff + posPointer,
-						backbuffSize(&DATA) - posPointer,
-						"\033[38;5;%dm%c", color, har
-					);
+					switch(DATA.args.colorsType) {
+						case 1: {
+							posPointer += snprintf(
+								DATA.backbuff + posPointer,
+								backbuffSize(&DATA) - posPointer,
+								"\033[38;5;%dm%c", color, har
+							);
+
+							break;
+						}
+						case 2: {
+							posPointer += snprintf(
+								DATA.backbuff + posPointer,
+								backbuffSize(&DATA) - posPointer,
+								"\033[48;5;%dm%c", color, har
+							);
+
+							break;
+						}
+						case 3: {
+							unsigned char bgColor = rand() % 256;
+
+							posPointer += snprintf(
+								DATA.backbuff + posPointer,
+								backbuffSize(&DATA) - posPointer,
+								"\033[48;5;%dm;38;5;%dm%c", color, bgColor, har
+							);
+
+							break;
+						}
+						case 4: {
+							posPointer += snprintf(
+								DATA.backbuff + posPointer,
+								backbuffSize(&DATA) - posPointer,
+								"\033[48;5;%dm ", color
+							);
+
+							break;
+						}
+					}
 
 					break;
 				}
@@ -96,22 +186,60 @@ int RenderFrame() {
 					unsigned char g = rand() % 256;
 					unsigned char b = rand() % 256;
 
-					posPointer += snprintf(
-						DATA.backbuff + posPointer,
-						backbuffSize(&DATA) - posPointer,
-						"\033[38;2;%d;%d;%dm%c", r, g, b, har
-					);
+
+					switch(DATA.args.colorsType) {
+						case 1: {
+							posPointer += snprintf(
+								DATA.backbuff + posPointer,
+								backbuffSize(&DATA) - posPointer,
+								"\033[38;2;%d;%d;%dm%c", r, g, b, har
+							);
+
+							break;
+						}
+						case 2: {
+							posPointer += snprintf(
+								DATA.backbuff + posPointer,
+								backbuffSize(&DATA) - posPointer,
+								"\033[48;2;%d;%d;%dm%c", r, g, b, har
+							);
+
+							break;
+						}
+						case 3: {
+							unsigned char bgR = rand() % 256;
+							unsigned char bgG = rand() % 256;
+							unsigned char bgB = rand() % 256;
+
+							posPointer += snprintf(
+								DATA.backbuff + posPointer,
+								backbuffSize(&DATA) - posPointer,
+								"\033[48;2;%d;%d;%dm;38;2;%d;%d;%dm%c", r, g, b, bgR, bgG, bgB, har
+							);
+
+							break;
+						}
+						case 4: {
+							posPointer += snprintf(
+								DATA.backbuff + posPointer,
+								backbuffSize(&DATA) - posPointer,
+								"\033[48;2;%d;%d;%dm ", r, g, b
+							);
+
+							break;
+						}
+					}
 
 					break;
 				}
 			}
 		}
 
-		posPointer += snprintf(DATA.backbuff + posPointer, backbuffSize(&DATA) - posPointer, "\033[0m");
 		if(y != DATA.termdim.ws_row - 1) {
 			posPointer += snprintf(DATA.backbuff + posPointer, backbuffSize(&DATA) - posPointer, "\n");
 		}
 	}
+	posPointer += snprintf(DATA.backbuff + posPointer, backbuffSize(&DATA) - posPointer, "\033[0m");
 
 	return posPointer;
 }
