@@ -163,7 +163,7 @@ int RenderFrame() {
 							posPointer += snprintf(
 								DATA.backbuff + posPointer,
 								backbuffSize(&DATA) - posPointer,
-								"\033[48;5;%dm;38;5;%dm%c", color, bgColor, har
+								"\033[48;5;%d;38;5;%dm%c", color, bgColor, har
 							);
 
 							break;
@@ -214,7 +214,7 @@ int RenderFrame() {
 							posPointer += snprintf(
 								DATA.backbuff + posPointer,
 								backbuffSize(&DATA) - posPointer,
-								"\033[48;2;%d;%d;%dm;38;2;%d;%d;%dm%c", r, g, b, bgR, bgG, bgB, har
+								"\033[48;2;%d;%d;%d;38;2;%d;%d;%dm%c", r, g, b, bgR, bgG, bgB, har
 							);
 
 							break;
