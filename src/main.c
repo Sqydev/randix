@@ -82,7 +82,7 @@ int RenderFrame() {
 							"\033[%dm%c", color, har
 						);
 					}
-					else if(DATA.args.colorType == 4) {
+					else if(DATA.args.colorsType == 4) {
 						posPointer += snprintf(
 							DATA.backbuff + posPointer,
 							backbuffSize(&DATA) - posPointer,
@@ -132,7 +132,7 @@ int RenderFrame() {
 							"\033[%dm%c", color, har
 						);
 					}
-					else if(DATA.args.colorType == 4) {
+					else if(DATA.args.colorsType == 4) {
 						posPointer += snprintf(
 							DATA.backbuff + posPointer,
 							backbuffSize(&DATA) - posPointer,
