@@ -41,7 +41,7 @@ void OptsSetup(int *argc, char ***argv) {
 	};
 
 	int optchar;
-	while ((optchar = getopt_long(*argc, *argv, "hr:q:t:p:s:", long_options, NULL)) != -1) {
+	while ((optchar = getopt_long(*argc, *argv, "hr:q:t:c:p:", long_options, NULL)) != -1) {
 		switch (optchar) {
 
 			case 'h': {
@@ -72,10 +72,15 @@ void OptsSetup(int *argc, char ***argv) {
 					"        4  background fill (space character)\n\n"
 
 					"  -p, --palette <list>\n"
-					"      Comma-separated color list. NOT DONE YET\n\n"
+					"      NOT DONE YET!!!!!!!!!!\n"
+					"      Specify color palette for randix to choose colors from.\n"
+					"      Format should be compatible with used color quality(-q),\n"
+					"      Each color should be separated with ',' and each channel should be separated with ;\n"
+					"      So for -q 1 you'll do -p 0,1 for colors black and red\n"
+					"      But for -q 4 you'll do -p 000;000;000,255;255;255 for colors black and white\n\n"
 
 					"  -c, --char-palette <list>\n"
-					"      List of characters / strings.\n\n";
+					"      Make string for randix to choose characters from.\n\n";
 
 				write(STDOUT_FILENO, help, strlen(help));
 				exit(EXIT_SUCCESS);
