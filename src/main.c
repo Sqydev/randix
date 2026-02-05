@@ -267,7 +267,7 @@ int RenderFrame() {
 }
 
 void Randix() {
-	while(1) {
+	for(;;) {
 		double frameStart = GetTime();
 
 		if(DATA.sigs.SIG_INT_TRIGGERED == 1) {
