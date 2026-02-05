@@ -21,6 +21,13 @@
 
 <img src="https://repology.org/badge/vertical-allrepos/randix.svg?columns=2" alt="Packaging status" align="right">
 
+<h2 align="left">What is this?</h2>
+Randix is basically a random character filler for your terminal. You can think of it like the Matrix effect, but instead of characters falling down the console, they appear all over and "swarm" your terminal.
+<h2 align="left">Usage</h2>
+<h2 align="left">Installation</h2>
+<h2 align="left">Building</h2>
+
+
 <br><br>Randix - random characters terminal filler
 Copyright (C) 2026-present Sqydev/_Sqyd_/Sqyd/Wojciech
 License: gnu gpl 3.0
