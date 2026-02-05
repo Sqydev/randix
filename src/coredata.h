@@ -3,7 +3,7 @@
 
 #include <signal.h>
 #include <sys/ioctl.h>
-#include <termio.h>
+#include <termios.h>
 #include <stdbool.h>
 
 typedef struct {
