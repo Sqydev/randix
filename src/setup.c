@@ -6,13 +6,12 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/ioctl.h>
-#include <termio.h>
+#include <termios.h>
 
 #include "./coredata.h"
 #include "./setup.h"
 #include "./signals.h"
 #include "backbuff.h"
-#include "bits/getopt_core.h"
 
 void DataSetup() {
 	DATA.args.refreshRate = 62; // In ms
@@ -36,13 +35,13 @@ void OptsSetup(int *argc, char ***argv) {
 		{"refresh-rate", required_argument, NULL, 'r'},
 		{"color-quality", required_argument, NULL, 'q'},
 		{"color-type", required_argument, NULL, 't'},
-		{"color-list", required_argument, NULL, 'c'},
-		{"string-list", required_argument, NULL, 's'},
+		{"palette", required_argument, NULL, 'p'},
+		{"char-palette", required_argument, NULL, 'c'},
 		{NULL, 0, NULL, 0}
 	};
 
 	int optchar;
-	while ((optchar = getopt_long(*argc, *argv, "hr:q:t:c:s:", long_options, NULL)) != -1) {
+	while ((optchar = getopt_long(*argc, *argv, "hr:q:t:p:s:", long_options, NULL)) != -1) {
 		switch (optchar) {
 
 			case 'h': {
@@ -72,10 +71,10 @@ void OptsSetup(int *argc, char ***argv) {
 					"        3  foreground + background\n"
 					"        4  background fill (space character)\n\n"
 
-					"  -c, --color-list <list>\n"
+					"  -p, --palette <list>\n"
 					"      Comma-separated color list. NOT DONE YET\n\n"
 
-					"  -s, --string-list <list>\n"
+					"  -c, --char-palette <list>\n"
 					"      List of characters / strings.\n\n";
 
 				write(STDOUT_FILENO, help, strlen(help));
@@ -101,7 +100,7 @@ void OptsSetup(int *argc, char ***argv) {
 				if (DATA.args.colorsType > 4) DATA.args.colorsType = 4;
 				break;
 
-			case 'c':
+			case 'p':
 				DATA.args.colorList = strdup(optarg);
 				if (!DATA.args.colorList) {
 					write(STDERR_FILENO,
@@ -110,7 +109,7 @@ void OptsSetup(int *argc, char ***argv) {
 				}
 				break;
 
-			case 's':
+			case 'c':
 				DATA.args.charList = strdup(optarg);
 				if (!DATA.args.charList) {
 					write(STDERR_FILENO,
