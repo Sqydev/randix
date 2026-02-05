@@ -6,6 +6,7 @@
 
 <h1 align="center">Randix</h1>
 
+![GitHub top language](https://img.shields.io/github/languages/top/Sqydev/randix)
 ![Last Commit](https://img.shields.io/github/last-commit/Sqydev/randix)
 ![Repo size](https://img.shields.io/github/repo-size/Sqydev/randix)
 ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/Sqydev/randix)
@@ -17,6 +18,8 @@
 ![GitHub Issues](https://img.shields.io/github/issues/Sqydev/randix)
 
 <br clear="left">
+
+<img src="https://repology.org/badge/vertical-allrepos/randix.svg?columns=2" alt="Packaging status" align="right">
 
 <br><br>Randix - random characters terminal filler
 Copyright (C) 2026-present Sqydev/_Sqyd_/Sqyd/Wojciech
