@@ -30,6 +30,7 @@
 #include "./utils.h"
 #include "./setup.h"
 #include "backbuff.h"
+#include "signal.h"
 
 CoreData DATA;
 
@@ -42,7 +43,14 @@ int RenderFrame() {
 
 	for(int y = 0; y < DATA.termdim.ws_row; y++) {
 		for(int x = 0; x < DATA.termdim.ws_col; x++) {
-			char har = rand() % 95 + 32;
+			unsigned char har;
+
+			if(!DATA.args.charList || DATA.args.charList[0] == '\0') {
+				har = rand() % 95 + 32;
+			}
+			else {
+				har = DATA.args.charList[rand() % strlen(DATA.args.charList)];
+			}
 			
 			switch(DATA.args.colorsQuality) {
 				case 0: {
@@ -293,9 +301,11 @@ void Randix() {
 
 void CleanUp() {
 	sigaction(SIGINT, &DATA.sigs.SIG_INT, NULL);
-	sigaction(SIGINT, &DATA.sigs.SIG_WINCH, NULL);
+	sigaction(SIGWINCH, &DATA.sigs.SIG_WINCH, NULL);
 
 	free(DATA.backbuff);
+	free(DATA.args.charList);
+	free(DATA.args.colorList);
 
 	tcsetattr(STDIN_FILENO, TCSANOW, &DATA.old_termios);
 

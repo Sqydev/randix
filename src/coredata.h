@@ -25,6 +25,9 @@ typedef struct {
 		double refreshRate;
 		int colorsQuality;
 		int colorsType;
+
+		char* charList;
+		char* colorList;
 	} args;
 
 	struct {

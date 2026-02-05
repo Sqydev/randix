@@ -30,31 +30,34 @@ void DataSetup() {
 	DATA.time.frameTime = DATA.args.refreshRate / 1000.0;
 }
 
-void OptsSetup(int *argc, char** *argv) {
+void OptsSetup(int *argc, char ***argv) {
 	struct option long_options[] = {
-		{"help", no_argument, NULL, 'h'},
+		{"help", no_argument,       NULL, 'h'},
 		{"refresh-rate", required_argument, NULL, 'r'},
-		{"color-quality", required_argument, NULL, 't'},
+		{"color-quality", required_argument, NULL, 'q'},
 		{"color-type", required_argument, NULL, 't'},
+		{"color-list", required_argument, NULL, 'c'},
+		{"string-list", required_argument, NULL, 's'},
 		{NULL, 0, NULL, 0}
 	};
 
 	int optchar;
-	while((optchar = getopt_long(*argc, *argv, "hr:cq:t:", long_options, NULL)) != EOF) {
-		switch(optchar) {
+	while ((optchar = getopt_long(*argc, *argv, "hr:q:t:c:s:", long_options, NULL)) != -1) {
+		switch (optchar) {
+
 			case 'h': {
-				const char* help =
+				const char *help =
 					"Usage:\n"
 					"  randix [options]\n\n"
 
 					"Options:\n"
 					"  -h, --help\n"
 					"      Show this help and exit.\n\n"
-				
+
 					"  -r, --refresh-rate <ms>\n"
 					"      Frame refresh rate in milliseconds (min: 1).\n\n"
-				
-					"  -cq <level>\n"
+
+					"  -q, --color-quality <level>\n"
 					"      Color quality / palette:\n"
 					"        0  no colors\n"
 					"        1  8-color ANSI (standard)\n"
@@ -62,57 +65,64 @@ void OptsSetup(int *argc, char** *argv) {
 					"        3  256-color ANSI\n"
 					"        4  TrueColor (24-bit RGB)\n\n"
 
-					"  -ct <mode>\n"
+					"  -t, --color-type <mode>\n"
 					"      Color application mode:\n"
 					"        1  foreground only\n"
 					"        2  background only\n"
 					"        3  foreground + background\n"
 					"        4  background fill (space character)\n\n"
-	
-					"Examples:\n"
-					"  randix -c -q 3 -t 1      256-color foreground\n"
-					"  randix -c -q 4 -t 4      TrueColor background fill\n";
+
+					"  -c, --color-list <list>\n"
+					"      Comma-separated color list. NOT DONE YET\n\n"
+
+					"  -s, --string-list <list>\n"
+					"      List of characters / strings.\n\n";
+
 				write(STDOUT_FILENO, help, strlen(help));
 				exit(EXIT_SUCCESS);
 			}
 
-			case 'r': {
-				if(optarg == NULL) {
-					write(STDOUT_FILENO, "Option -r requires an argument\n", 31);
+			case 'r':
+				DATA.args.refreshRate = atoi(optarg);
+				if (DATA.args.refreshRate <= 0)
+					DATA.args.refreshRate = 1;
+				DATA.time.frameTime = DATA.args.refreshRate / 1000.0;
+				break;
+
+			case 'q':
+				DATA.args.colorsQuality = atoi(optarg);
+				if (DATA.args.colorsQuality < 0) DATA.args.colorsQuality = 0;
+				if (DATA.args.colorsQuality > 4) DATA.args.colorsQuality = 4;
+				break;
+
+			case 't':
+				DATA.args.colorsType = atoi(optarg);
+				if (DATA.args.colorsType < 1) DATA.args.colorsType = 1;
+				if (DATA.args.colorsType > 4) DATA.args.colorsType = 4;
+				break;
+
+			case 'c':
+				DATA.args.colorList = strdup(optarg);
+				if (!DATA.args.colorList) {
+					write(STDERR_FILENO,
+						"Memory allocation error for colorList\n", 39);
 					exit(EXIT_FAILURE);
 				}
-				DATA.args.refreshRate = atoi(optarg);
-				if(DATA.args.refreshRate <= 0) { DATA.args.refreshRate = 1; }
-
-				DATA.time.frameTime = DATA.args.refreshRate / 1000.0;
-
 				break;
-			}
 
-			case 'c': {
+			case 's':
+				DATA.args.charList = strdup(optarg);
+				if (!DATA.args.charList) {
+					write(STDERR_FILENO,
+						"Memory allocation error for charList\n", 38);
+					exit(EXIT_FAILURE);
+				}
 				break;
-			}
 
-			case 'q': {
-				DATA.args.colorsQuality = atoi(optarg);
-				if(DATA.args.colorsQuality < 0) { DATA.args.colorsQuality = 0; }
-				if(DATA.args.colorsQuality > 4) { DATA.args.colorsQuality = 4; }
-
-				break;
-			}
-
-			case 't': {
-				DATA.args.colorsType = atoi(optarg);
-				if(DATA.args.colorsType < 1) { DATA.args.colorsType = 1; }
-				if(DATA.args.colorsType > 4) { DATA.args.colorsType = 4; }
-
-				break;
-			}
-			
-			default: {
-				write(STDOUT_FILENO, "Unknown option, type -h or --help to get help\n", 47);
+			default:
+				write(STDERR_FILENO,
+					"Unknown option, type -h or --help\n", 33);
 				exit(EXIT_FAILURE);
-			}
 		}
 	}
 }
