@@ -78,7 +78,7 @@ pkgs.stdenv.mkDerivation rec {
 }
 EOF
 
-# --- C. VOID LINUX (xbps-src) ---
+# --- C. VOID LINUX ---
 echo "[3/5] Generating template (Void)..."
 mkdir -p "$OUT/void"
 cat > "$OUT/void/template" <<EOF
@@ -92,6 +92,10 @@ license="$license"
 homepage="$url"
 distfiles="$GITHUB_URL/$BIN_NAME_REMOTE"
 checksum="$SHA256_SUM"
+
+do_build() {
+    :
+}
 
 do_install() {
     vbin $BIN_NAME_REMOTE $name
