@@ -42,7 +42,6 @@ arch=('x86_64')
 url="$url"
 license=('$license')
 depends=($dependencies)
-# Pobieramy BIN_NAME_REMOTE, ale zapisujemy lokalnie jako nazwa pakietu ($name)
 source=("$name::$GITHUB_URL/$BIN_NAME_REMOTE")
 sha256sums=('$SHA256_SUM')
 
@@ -95,7 +94,6 @@ distfiles="$GITHUB_URL/$BIN_NAME_REMOTE"
 checksum="$SHA256_SUM"
 
 do_install() {
-    # xbps-src wypakuje to do katalogu o nazwie pliku zdalnego
     vbin $BIN_NAME_REMOTE $name
 }
 EOF
