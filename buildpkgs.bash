@@ -1,171 +1,158 @@
 #!/usr/bin/env bash
-
 set -e
 
-if [ ! -f "./package.conf" ]; then
-    echo "NO package.conf :0"
+if [ ! -f "./package.conf" ]; then 
+    echo "BŁĄD: Brak pliku package.conf! :0"
     exit 1
 fi
+
 source ./package.conf
 
-ARCH_GENERIC="$arch"
-case "$ARCH_GENERIC" in
-    x86_64)
-        ARCH_DEB="amd64"
-        ARCH_RPM="x86_64"
-        ARCH_AUR="x86_64"
-        ARCH_VOID="x86_64"
-        ARCH_NIX="x86_64-linux"
-        ;;
-    aarch64|arm64)
-        ARCH_DEB="arm64"
-        ARCH_RPM="aarch64"
-        ARCH_AUR="aarch64"
-        ARCH_VOID="aarch64"
-        ARCH_NIX="aarch64-linux"
-        ;;
-    *)
-        echo "Unsupported architecture: $ARCH_GENERIC"
-        exit 1
-        ;;
-esac
-
-OUT="$(pwd)/packages"
-BIN_SRC="compiled/normal/randix-normal-glibc"
-INSTALL_NAME="$name"
-
-if [ ! -f "$BIN_SRC" ]; then
-    echo "NO BIN IN $BIN_SRC :0"
+# Sprawdzamy czy zmienne z package.conf istnieją
+if [ -z "$BIN_NAME_REMOTE" ] || [ -z "$BIN_LOCAL" ]; then
+    echo "BŁĄD: Brak zmiennych BIN_NAME_REMOTE lub BIN_LOCAL w package.conf!"
     exit 1
 fi
 
+if [ ! -f "$BIN_LOCAL" ]; then 
+    echo "BŁĄD: Plik binarny nie istnieje w: $BIN_LOCAL"
+    exit 1
+fi
+
+SHA256_SUM=$(sha256sum "$BIN_LOCAL" | cut -d' ' -f1)
+OUT="$(pwd)/packages"
+GITHUB_URL="$url/releases/download/v$version"
+DEB_ARCH="amd64"
+RPM_ARCH="x86_64"
+
+echo "=== Starting build process ==="
+echo "Wersja: $version | Hash: $SHA256_SUM"
+echo "Plik zdalny: $BIN_NAME_REMOTE"
 mkdir -p "$OUT"
-BIN_FULL_PATH="$(realpath $BIN_SRC)"
-SHA256_SUM=$(sha256sum "$BIN_SRC" | cut -d' ' -f1)
 
-# --- ARCH LINUX (AUR) ---
-echo "Doing AUR (PKGBUILD)"
+# --- A. ARCH LINUX (AUR) ---
+echo "[1/5] Generating PKGBUILD (Arch)..."
 mkdir -p "$OUT/aur"
-
-TARGET_BIN="compiled/local/randix-local-glibc"
-
 cat > "$OUT/aur/PKGBUILD" <<EOF
 pkgname=$name
 pkgver=$version
 pkgrel=$release
 pkgdesc="$summary"
-arch=('$arch')
+arch=('x86_64')
 url="$url"
 license=('$license')
 depends=($dependencies)
-makedepends=('gcc' 'make')
-
-source=("\$pkgname-\$pkgver.tar.gz::\$url/archive/refs/tags/v\$pkgver.tar.gz")
-sha256sums=('SKIP')
-
-build() {
-    cd "\$srcdir/\$pkgname-\$pkgver"
-    make local-build
-}
+# Pobieramy BIN_NAME_REMOTE, ale zapisujemy lokalnie jako nazwa pakietu ($name)
+source=("$name::$GITHUB_URL/$BIN_NAME_REMOTE")
+sha256sums=('$SHA256_SUM')
 
 package() {
-    cd "\$srcdir/\$pkgname-\$pkgver"
-    install -Dm755 "$TARGET_BIN" "\$pkgdir/usr/bin/\$pkgname"
+    install -Dm755 "\$srcdir/$name" "\$pkgdir/usr/bin/\$pkgname"
 }
 EOF
 
-# --- DEBIAN (.deb) ---
-echo "Doing .deb"
-DEBROOT="$OUT/deb/${name}_${version}_${ARCH_DEB}"
-mkdir -p "$DEBROOT/DEBIAN"
-mkdir -p "$DEBROOT/usr/bin"
-cp "$BIN_SRC" "$DEBROOT/usr/bin/$INSTALL_NAME"
-chmod 755 "$DEBROOT/usr/bin/$INSTALL_NAME"
+# --- B. NIX (Nixpkgs) ---
+echo "[2/5] Generating default.nix (Nix)..."
+mkdir -p "$OUT/nix"
+cat > "$OUT/nix/default.nix" <<EOF
+{ pkgs ? import <nixpkgs> {} }:
 
+pkgs.stdenv.mkDerivation rec {
+  pname = "$name";
+  version = "$version";
+  src = pkgs.fetchurl {
+    url = "$GITHUB_URL/$BIN_NAME_REMOTE";
+    sha256 = "$SHA256_SUM";
+  };
+  dontUnpack = true;
+  installPhase = ''
+    mkdir -p \$out/bin
+    cp \$src \$out/bin/$name
+    chmod +x \$out/bin/$name
+  '';
+  meta = {
+    description = "$summary";
+    homepage = "$url";
+    license = pkgs.lib.licenses.gpl3;
+    platforms = [ "x86_64-linux" ];
+  };
+}
+EOF
+
+# --- C. VOID LINUX (xbps-src) ---
+echo "[3/5] Generating template (Void)..."
+mkdir -p "$OUT/void"
+cat > "$OUT/void/template" <<EOF
+pkgname=$name
+version=$version
+revision=$release
+archs="x86_64"
+short_desc="$summary"
+maintainer="$maintainer"
+license="$license"
+homepage="$url"
+distfiles="$GITHUB_URL/$BIN_NAME_REMOTE"
+checksum="$SHA256_SUM"
+
+do_install() {
+    # xbps-src wypakuje to do katalogu o nazwie pliku zdalnego
+    vbin $BIN_NAME_REMOTE $name
+}
+EOF
+
+# --- D. DEBIAN (.deb) ---
+echo "[4/5] Building .deb..."
+DEBROOT="$OUT/deb_tmp"
+mkdir -p "$DEBROOT/DEBIAN" "$DEBROOT/usr/bin"
+cp "$BIN_LOCAL" "$DEBROOT/usr/bin/$name"
+chmod 755 "$DEBROOT/usr/bin/$name"
 deb_deps=$(echo "$dependencies" | sed "s/'//g; s/ /, /g")
 
-{
-    echo "Package: $name"
-    echo "Version: $version-$release"
-    echo "Section: utils"
-    echo "Priority: optional"
-    echo "Architecture: $ARCH_DEB"
-    echo "Maintainer: $maintainer"
-    [[ -n "$deb_deps" ]] && echo "Depends: $deb_deps"
-    echo "Description: $summary"
-} > "$DEBROOT/DEBIAN/control"
+cat > "$DEBROOT/DEBIAN/control" <<EOF
+Package: $name
+Version: $version-$release
+Section: utils
+Priority: optional
+Architecture: $DEB_ARCH
+Maintainer: $maintainer
+Depends: $deb_deps
+Description: $summary
+EOF
+dpkg-deb --build --root-owner-group "$DEBROOT" "$OUT/${name}_${version}_${DEB_ARCH}.deb"
+rm -rf "$DEBROOT"
 
-dpkg-deb --build --root-owner-group "$DEBROOT" "$OUT/deb/${name}_${version}_${ARCH_DEB}.deb"
-
-# --- FEDORA (RPM) ---
-echo "Doing rpm"
-RPMROOT="$OUT/rpm"
-mkdir -p "$RPMROOT"/{BUILD,RPMS,SOURCES,SPECS,SRPMS}
-cp "$BIN_SRC" "$RPMROOT/SOURCES/$INSTALL_NAME"
-
-cat > "$RPMROOT/SPECS/$name.spec" <<EOF
-Name:           $name
-Version:        $version
-Release:        $release%{?dist}
-Summary:        $summary
-License:        $license
-BuildArch:      $ARCH_RPM
+# --- E. FEDORA (RPM) ---
+echo "[5/5] Building .rpm..."
+if command -v rpmbuild &> /dev/null; then
+    RPMROOT="$OUT/rpm_tmp"
+    rm -rf "$RPMROOT"
+    mkdir -p "$RPMROOT"/{BUILD,RPMS,SOURCES,SPECS,SRPMS,db}
+    cp "$BIN_LOCAL" "$RPMROOT/SOURCES/$name"
+    cat > "$RPMROOT/SPECS/$name.spec" <<EOF
+Name:            $name
+Version:         $version
+Release:         $release
+Summary:         $summary
+License:         $license
 
 %description
 $summary
 
 %install
 mkdir -p %{buildroot}/usr/bin
-cp %{_sourcedir}/$INSTALL_NAME %{buildroot}/usr/bin/$INSTALL_NAME
-chmod 755 %{buildroot}/usr/bin/$INSTALL_NAME
+cp %{_sourcedir}/$name %{buildroot}/usr/bin/$name
+chmod 755 %{buildroot}/usr/bin/$name
 
 %files
-/usr/bin/$INSTALL_NAME
+/usr/bin/$name
 EOF
-# rpmbuild --define "_topdir $RPMROOT" -bb "$RPMROOT/SPECS/$name.spec"
+    rpmbuild --define "_topdir $RPMROOT" --dbpath "$RPMROOT/db" -bb "$RPMROOT/SPECS/$name.spec"
+    find "$RPMROOT/RPMS" -name "*.rpm" -exec mv {} "$OUT/" \;
+    rm -rf "$RPMROOT"
+else
+    echo "SKIP: Brak rpmbuild - zainstaluj 'rpm-build' lub 'rpmbuild' aby wygenerować RPM."
+fi
 
-# --- VOID LINUX ---
-echo "Doing void things"
-mkdir -p "$OUT/void"
-cat > "$OUT/void/template" <<EOF
-pkgname=$name
-version=$version
-revision=$release
-archs="$ARCH_VOID"
-short_desc="$summary"
-maintainer="$maintainer"
-license="$license"
-homepage="$url"
-checksum="$SHA256_SUM"
-
-do_install() {
-	vbin "\$(pwd)/../../$BIN_SRC" $INSTALL_NAME
-}
-EOF
-
-# --- NIXOS ---
-echo "Doing default.nix"
-mkdir -p "$OUT/nix"
-cat > "$OUT/nix/default.nix" <<EOF
-{ stdenv }:
-
-stdenv.mkDerivation {
-  pname = "$name";
-  version = "$version";
-  src = ../../$BIN_SRC;
-  dontUnpack = true;
-  installPhase = ''
-    mkdir -p \$out/bin
-    cp \$src \$out/bin/$INSTALL_NAME
-    chmod +x \$out/bin/$INSTALL_NAME
-  '';
-  meta = {
-    description = "$summary";
-    homepage = "$url";
-    license = stdenv.lib.licenses.gpl3;
-    platforms = [ "$ARCH_NIX" ];
-  };
-}
-EOF
-
-echo -e "\nDone!"
+echo "--------------------------------------------------------"
+echo "GOTOWE! Pakiety znajdują się w: $OUT"
+echo "Teraz wrzuć wygenerowane .deb i .rpm jako Assets do Release v$version"
