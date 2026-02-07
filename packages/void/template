@@ -6,8 +6,10 @@ short_desc="A simple terminal program that displays random characters."
 maintainer="Sqyd"
 license="GPL3"
 homepage="https://github.com/Sqydev/randix"
+distfiles="https://github.com/Sqydev/randix/releases/download/v1.0.0/randix-normal-glibc"
 checksum="0025ac5df997530defd8cc4e8d370a176a1536cebbf6714f92a1edfc53843a97"
 
 do_install() {
-	vbin "$(pwd)/../../compiled/normal/randix-normal-glibc" randix
+    # xbps-src wypakuje to do katalogu o nazwie pliku zdalnego
+    vbin randix-normal-glibc randix
 }
