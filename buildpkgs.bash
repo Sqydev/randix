@@ -2,7 +2,7 @@
 set -e
 
 if [ ! -f "./package.conf" ]; then 
-    echo "BŁĄD: Brak pliku package.conf! :0"
+    echo "NO package.conf! :0"
     exit 1
 fi
 
@@ -10,12 +10,12 @@ source ./package.conf
 
 # Sprawdzamy czy zmienne z package.conf istnieją
 if [ -z "$BIN_NAME_REMOTE" ] || [ -z "$BIN_LOCAL" ]; then
-    echo "BŁĄD: Brak zmiennych BIN_NAME_REMOTE lub BIN_LOCAL w package.conf!"
+    echo "package.conf! is bad"
     exit 1
 fi
 
 if [ ! -f "$BIN_LOCAL" ]; then 
-    echo "BŁĄD: Plik binarny nie istnieje w: $BIN_LOCAL"
+    echo "NO BIN IN: $BIN_LOCAL"
     exit 1
 fi
 
@@ -26,8 +26,8 @@ DEB_ARCH="amd64"
 RPM_ARCH="x86_64"
 
 echo "=== Starting build process ==="
-echo "Wersja: $version | Hash: $SHA256_SUM"
-echo "Plik zdalny: $BIN_NAME_REMOTE"
+echo "Version: $version | Hash: $SHA256_SUM"
+echo "Remote file: $BIN_NAME_REMOTE"
 mkdir -p "$OUT"
 
 # --- A. ARCH LINUX (AUR) ---
@@ -150,9 +150,8 @@ EOF
     find "$RPMROOT/RPMS" -name "*.rpm" -exec mv {} "$OUT/" \;
     rm -rf "$RPMROOT"
 else
-    echo "SKIP: Brak rpmbuild - zainstaluj 'rpm-build' lub 'rpmbuild' aby wygenerować RPM."
+    echo "SKIP: No rpmbuild - install 'rpm-build' or 'rpmbuild' to gen RPM."
 fi
 
 echo "--------------------------------------------------------"
-echo "GOTOWE! Pakiety znajdują się w: $OUT"
-echo "Teraz wrzuć wygenerowane .deb i .rpm jako Assets do Release v$version"
+echo "Done! Packages are in: $OUT"
