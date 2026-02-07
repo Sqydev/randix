@@ -1,2 +1,3 @@
-obj/bleeding-musl/utils.o: src/utils.c src/utils.h
+obj/bleeding-musl/utils.o: src/utils.c src/utils.h src/./coredata.h
 src/utils.h:
+src/./coredata.h:

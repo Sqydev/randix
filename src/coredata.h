@@ -7,11 +7,19 @@
 #include <stdbool.h>
 
 typedef struct {
+	unsigned char r;
+	unsigned char g;
+	unsigned char b;
+	unsigned char color;
+} Color;
+
+typedef struct {
 	struct winsize termdim;
 	struct termios old_termios;
 	struct termios new_termios;
 
 	char* backbuff;
+	char* version;
 
 	struct {
 		volatile sig_atomic_t SIG_INT_TRIGGERED;
@@ -27,7 +35,8 @@ typedef struct {
 		int colorsType;
 
 		char* charList;
-		char* colorList;
+		Color* colorList;
+		int colorListLen;
 	} args;
 
 	struct {

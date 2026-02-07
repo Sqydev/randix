@@ -68,17 +68,31 @@ int RenderFrame() {
 					 * For fg: 30 is black, 31 is red and so on up to 37
 					 * For bg its the same but + 10. So 40 is black, 41 is red and so on up to 47.
 					*/
+					unsigned char color;
 
-					unsigned char color = (rand() % 8) + 30;
+					if(!DATA.args.colorList) {
+						color = (rand() % 8) + 30;
+					}
+					else {
+						color = DATA.args.colorList[rand() % DATA.args.colorListLen].color + 30;
+					}
+
 					if(DATA.args.colorsType > 1) {
 						if(DATA.args.colorsType == 2) {
 							color += 10;
 						}
 						else {
+							unsigned char colorBg;
+							if(!DATA.args.colorList) {
+								colorBg = (rand() % 8) + 40;
+							}
+							else {
+								colorBg = DATA.args.colorList[rand() % DATA.args.colorListLen].color + 40;
+							}
 							posPointer += snprintf(
 								DATA.backbuff + posPointer,
 								backbuffSize(&DATA) - posPointer,
-								"\033[%d", (rand() % 8) + 40
+								"\033[%d", colorBg
 							);
 						}
 					}
@@ -111,24 +125,45 @@ int RenderFrame() {
 					/*
 					 * Same as in case 1
 					*/
-					
-					unsigned char color = (rand() % 8) + 30;
-					unsigned char colorB = (rand() % 8) + 90;
-					bool colorDeterment = rand() % 2;
+					unsigned char color;
 
-					if(colorDeterment == true) {
-						color = colorB;
+					if(!DATA.args.colorList) {
+						color = (rand() % 8) + 30;
+						unsigned char colorB = (rand() % 8) + 90;
+						
+						bool colorDeterment = rand() % 2;
+
+						if(colorDeterment == true) {
+							color = colorB;
+						}
 					}
+					else {
+						int place = rand() % DATA.args.colorListLen;
+						if(DATA.args.colorList[place].color > 7) {
+							color = DATA.args.colorList[place].color + 90 - 8;
+						}
+						else {
+							color = DATA.args.colorList[place].color + 30;
+						}
+					}
+					
 
 					if(DATA.args.colorsType > 1) {
 						if(DATA.args.colorsType == 2) {
 							color += 10;
 						}
 						else {
+							unsigned char colorBg;
+							if(!DATA.args.colorList) {
+								colorBg = (rand() % 8) + 40;
+							}
+							else {
+								colorBg = DATA.args.colorList[rand() % DATA.args.colorListLen].color + 40;
+							}
 							posPointer += snprintf(
 								DATA.backbuff + posPointer,
 								backbuffSize(&DATA) - posPointer,
-								"\033[%d", (rand() % 8) + 40
+								"\033[%d", colorBg
 							);
 						}
 					}
@@ -158,7 +193,13 @@ int RenderFrame() {
 					break;
 				}
 				case 3: {
-					unsigned char color = rand() % 256;
+					unsigned char color;
+					if(!DATA.args.colorList) {
+						color = rand() % 256;
+					}
+					else {
+						color = DATA.args.colorList[rand() % DATA.args.colorListLen].color;
+					}
 
 					switch(DATA.args.colorsType) {
 						case 1: {
@@ -180,7 +221,13 @@ int RenderFrame() {
 							break;
 						}
 						case 3: {
-							unsigned char bgColor = rand() % 256;
+							unsigned char bgColor;
+							if(!DATA.args.colorList) {
+								bgColor = rand() % 256;
+							}
+							else {
+								bgColor = DATA.args.colorList[rand() % DATA.args.colorListLen].color;
+							}
 
 							posPointer += snprintf(
 								DATA.backbuff + posPointer,
@@ -204,10 +251,20 @@ int RenderFrame() {
 					break;
 				}
 				case 4: {
-					unsigned char r = rand() % 256;
-					unsigned char g = rand() % 256;
-					unsigned char b = rand() % 256;
-
+					unsigned char r;
+					unsigned char g;
+					unsigned char b;
+					if(!DATA.args.colorList) {
+						r = rand() % 256;
+						g = rand() % 256;
+						b = rand() % 256;
+					}
+					else {
+						int color = rand() % DATA.args.colorListLen;
+						r = DATA.args.colorList[color].r;
+						g = DATA.args.colorList[color].g;
+						b = DATA.args.colorList[color].b;
+					}
 
 					switch(DATA.args.colorsType) {
 						case 1: {
@@ -229,9 +286,20 @@ int RenderFrame() {
 							break;
 						}
 						case 3: {
-							unsigned char bgR = rand() % 256;
-							unsigned char bgG = rand() % 256;
-							unsigned char bgB = rand() % 256;
+							unsigned char bgR;
+							unsigned char bgG;
+							unsigned char bgB;
+							if(!DATA.args.colorList) {
+								bgR = rand() % 256;
+								bgG = rand() % 256;
+								bgB = rand() % 256;
+							}
+							else {
+								int color = rand() % DATA.args.colorListLen;
+								bgR = DATA.args.colorList[color].r;
+								bgG = DATA.args.colorList[color].g;
+								bgB = DATA.args.colorList[color].b;
+							}
 
 							posPointer += snprintf(
 								DATA.backbuff + posPointer,
@@ -304,8 +372,11 @@ void CleanUp() {
 	sigaction(SIGWINCH, &DATA.sigs.SIG_WINCH, NULL);
 
 	free(DATA.backbuff);
+	DATA.backbuff = NULL;
 	free(DATA.args.charList);
+	DATA.args.charList = NULL;
 	free(DATA.args.colorList);
+	DATA.args.colorList = NULL;
 
 	tcsetattr(STDIN_FILENO, TCSANOW, &DATA.old_termios);
 

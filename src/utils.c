@@ -8,4 +8,3 @@ double GetTime() {
 
 	return time_struct.tv_sec + time_struct.tv_nsec / 1e9;
 }
-
