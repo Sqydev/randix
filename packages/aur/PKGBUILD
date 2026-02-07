@@ -1,0 +1,12 @@
+pkgname=randix
+pkgver=1.0.0
+pkgrel=1
+pkgdesc="A simple terminal program that displays random characters."
+arch=('x86_64')
+url="https://github.com/Sqydev/randix"
+license=('GPL3')
+depends=()
+
+package() {
+    install -Dm755 "$srcdir/../../compiled/normal/randix-normal-glibc" "$pkgdir/usr/bin/randix"
+}

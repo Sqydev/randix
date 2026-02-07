@@ -1,0 +1,13 @@
+pkgname=randix
+version=1.0.0
+revision=1
+archs="x86_64"
+short_desc="A simple terminal program that displays random characters."
+maintainer="Sqyd"
+license="GPL3"
+homepage="https://github.com/Sqydev/randix"
+checksum="0025ac5df997530defd8cc4e8d370a176a1536cebbf6714f92a1edfc53843a97"
+
+do_install() {
+	vbin "$(pwd)/../../compiled/normal/randix-normal-glibc" randix
+}

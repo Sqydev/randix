@@ -1,0 +1,7 @@
+Package: randix
+Version: 1.0.0-1
+Section: utils
+Priority: optional
+Architecture: amd64
+Maintainer: Sqyd
+Description: A simple terminal program that displays random characters.
