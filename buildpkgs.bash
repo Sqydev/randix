@@ -79,9 +79,24 @@ pkgs.stdenv.mkDerivation rec {
 EOF
 
 # --- C. VOID LINUX ---
-echo "[3/5] Generating template (Void)..."
-mkdir -p "$OUT/void"
-cat > "$OUT/void/template" <<EOF
+echo "[3/5] Building Void Linux package (.xbps for glibc)..."
+VOID_OUT="$OUT/void"
+mkdir -p "$VOID_OUT/bin" "$VOID_OUT/binpkgs" "$VOID_OUT/repo"
+
+BIN_DIR="$VOID_OUT/binpkgs/$name"
+mkdir -p "$BIN_DIR/usr/bin"
+
+if [ ! -f "$BIN_LOCAL" ]; then
+    echo "[INFO] Downloading $BIN_NAME_REMOTE from GitHub..."
+    curl -L -o "$BIN_DIR/usr/bin/$name" "$GITHUB_URL/$BIN_NAME_REMOTE"
+else
+    cp "$BIN_LOCAL" "$BIN_DIR/usr/bin/$name"
+fi
+
+chmod +x "$BIN_DIR/usr/bin/$name"
+SHA256_SUM=$(sha256sum "$BIN_DIR/usr/bin/$name" | cut -d' ' -f1)
+
+cat > "$VOID_OUT/template" <<EOF
 pkgname=$name
 version=$version
 revision=$release
@@ -90,17 +105,36 @@ short_desc="$summary"
 maintainer="$maintainer"
 license="$license"
 homepage="$url"
-distfiles="$GITHUB_URL/$BIN_NAME_REMOTE"
+distfiles="$BIN_DIR/usr/bin/$name"
 checksum="$SHA256_SUM"
 
-do_build() {
-    :
-}
+build_style=none
+
+do_build() { :; }
 
 do_install() {
-    vbin $BIN_NAME_REMOTE $name
+    vbin $BIN_DIR/usr/bin/$name $name
 }
 EOF
+
+echo "[INFO] Template generated at $VOID_OUT/template"
+
+pushd "$VOID_OUT" > /dev/null
+
+echo "[INFO] Creating .xbps package..."
+xbps-create -A x86_64 \
+            -n "${name}-${version}_${release}" \
+            -s "$summary" \
+            "$BIN_DIR"
+
+mkdir -p repo
+xbps-rindex -a *.xbps
+
+mkdir -p bin
+cp *.xbps bin/ 2>/dev/null || true
+
+popd > /dev/null
+echo "[INFO] Void glibc package built: $VOID_OUT/bin/"
 
 # --- D. DEBIAN (.deb) ---
 echo "[4/5] Building .deb..."
