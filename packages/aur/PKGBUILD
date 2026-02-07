@@ -6,7 +6,17 @@ arch=('x86_64')
 url="https://github.com/Sqydev/randix"
 license=('GPL3')
 depends=()
+makedepends=('gcc' 'make')
+
+source=("$pkgname-$pkgver.tar.gz::$url/archive/refs/tags/v$pkgver.tar.gz")
+sha256sums=('SKIP')
+
+build() {
+    cd "$srcdir/$pkgname-$pkgver"
+    make local-build
+}
 
 package() {
-    install -Dm755 "$srcdir/../../compiled/normal/randix-normal-glibc" "$pkgdir/usr/bin/randix"
+    cd "$srcdir/$pkgname-$pkgver"
+    install -Dm755 "compiled/local/randix-local-glibc" "$pkgdir/usr/bin/$pkgname"
 }

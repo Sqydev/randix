@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+
 set -e
 
 if [ ! -f "./package.conf" ]; then
@@ -45,18 +46,31 @@ SHA256_SUM=$(sha256sum "$BIN_SRC" | cut -d' ' -f1)
 # --- ARCH LINUX (AUR) ---
 echo "Doing AUR (PKGBUILD)"
 mkdir -p "$OUT/aur"
+
+TARGET_BIN="compiled/local/randix-local-glibc"
+
 cat > "$OUT/aur/PKGBUILD" <<EOF
 pkgname=$name
 pkgver=$version
 pkgrel=$release
 pkgdesc="$summary"
-arch=('$ARCH_AUR')
+arch=('$arch')
 url="$url"
 license=('$license')
 depends=($dependencies)
+makedepends=('gcc' 'make')
+
+source=("\$pkgname-\$pkgver.tar.gz::\$url/archive/refs/tags/v\$pkgver.tar.gz")
+sha256sums=('SKIP')
+
+build() {
+    cd "\$srcdir/\$pkgname-\$pkgver"
+    make local-build
+}
 
 package() {
-    install -Dm755 "\$srcdir/../../$BIN_SRC" "\$pkgdir/usr/bin/$INSTALL_NAME"
+    cd "\$srcdir/\$pkgname-\$pkgver"
+    install -Dm755 "$TARGET_BIN" "\$pkgdir/usr/bin/\$pkgname"
 }
 EOF
 
