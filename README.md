@@ -16,6 +16,9 @@
 ![GitHub Release](https://img.shields.io/github/v/release/Sqydev/randix)
 ![GitHub Tag](https://img.shields.io/github/v/tag/Sqydev/randix)
 ![GitHub Issues](https://img.shields.io/github/issues/Sqydev/randix)
+![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/Sqydev/randix/total)
+![GitHub Downloads (all assets, latest release)](https://img.shields.io/github/downloads/Sqydev/randix/latest/total)
+
 
 <br clear="left">
 
