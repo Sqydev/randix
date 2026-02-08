@@ -50,7 +50,7 @@ void OptsSetup(int *argc, char ***argv) {
 	while ((optchar = getopt_long(*argc, *argv, "hvr:q:t:c:p:", long_options, NULL)) != -1) {
 		switch (optchar) {
 			case 'v': {
-				write(STDOUT_FILENO, DATA.version, strlen(DATA.version));
+				DATA.writeCode = write(STDOUT_FILENO, DATA.version, strlen(DATA.version));
 				exit(EXIT_SUCCESS);
 			}
 
@@ -92,7 +92,7 @@ void OptsSetup(int *argc, char ***argv) {
 					"  -c, --char-palette <string>\n"
 					"      Make string for randix to choose characters from.\n";
 
-				write(STDOUT_FILENO, help, strlen(help));
+				DATA.writeCode = write(STDOUT_FILENO, help, strlen(help));
 				exit(EXIT_SUCCESS);
 			}
 
@@ -121,7 +121,7 @@ void OptsSetup(int *argc, char ***argv) {
 			case 'c': {
 				DATA.args.charList = strdup(optarg);
 				if (!DATA.args.charList) {
-					write(STDERR_FILENO,
+					DATA.writeCode = write(STDERR_FILENO,
 						"Memory allocation error for charList\n", 38);
 					exit(EXIT_FAILURE);
 				}
@@ -139,7 +139,7 @@ void OptsSetup(int *argc, char ***argv) {
 
 				DATA.args.colorList = malloc(colorCount * sizeof(Color));
 				if (!DATA.args.colorList) {
-					write(STDERR_FILENO,
+					DATA.writeCode = write(STDERR_FILENO,
 						"Memory allocation error for colorList\n", 39);
 					exit(EXIT_FAILURE);
 				}
@@ -169,7 +169,7 @@ void OptsSetup(int *argc, char ***argv) {
 			}
 
 			default: {
-				write(STDERR_FILENO,
+				DATA.writeCode = write(STDERR_FILENO,
 					"Unknown option, type -h or --help\n", 33);
 				exit(EXIT_FAILURE);
 			}
@@ -184,9 +184,9 @@ void Setup(int *argc, char** *argv) {
 
 	OptsSetup(argc, argv);
 
-	write(STDOUT_FILENO, "\033[?1049h", 8);
-	write(STDOUT_FILENO, "\033[?25l", 6);
-	write(STDOUT_FILENO, "\033[2J", 4);
+	DATA.writeCode = write(STDOUT_FILENO, "\033[?1049h", 8);
+	DATA.writeCode = write(STDOUT_FILENO, "\033[?25l", 6);
+	DATA.writeCode = write(STDOUT_FILENO, "\033[2J", 4);
 
 	tcgetattr(STDIN_FILENO, &DATA.old_termios);
 

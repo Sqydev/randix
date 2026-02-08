@@ -21,6 +21,8 @@ typedef struct {
 	char* backbuff;
 	char* version;
 
+	int writeCode;
+
 	struct {
 		volatile sig_atomic_t SIG_INT_TRIGGERED;
 		volatile sig_atomic_t SIG_WINCH_TRIGGERED;

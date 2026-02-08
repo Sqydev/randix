@@ -351,7 +351,7 @@ void Randix() {
 
 		// PinPointer becouse it sounds funny
 		int pinPointer = RenderFrame();
-		write(STDOUT_FILENO, DATA.backbuff, pinPointer);
+		DATA.writeCode = write(STDOUT_FILENO, DATA.backbuff, pinPointer);
 
 		double frameEnd = GetTime();
 
@@ -364,6 +364,8 @@ void Randix() {
 
 			nanosleep(&time_struct, NULL);
 		}
+
+		(void)DATA.writeCode;
 	}
 }
 
@@ -380,9 +382,9 @@ void CleanUp() {
 
 	tcsetattr(STDIN_FILENO, TCSANOW, &DATA.old_termios);
 
-	write(STDOUT_FILENO, "\033[0m", 3);
-	write(STDOUT_FILENO, "\033[?25h", 6);
-	write(STDOUT_FILENO, "\033[?1049l", 8);
+	DATA.writeCode = write(STDOUT_FILENO, "\033[0m", 3);
+	DATA.writeCode = write(STDOUT_FILENO, "\033[?25h", 6);
+	DATA.writeCode = write(STDOUT_FILENO, "\033[?1049l", 8);
 }
 
 int main(int argc, char** argv) {
