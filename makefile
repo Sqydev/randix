@@ -20,7 +20,7 @@ else
   LIBC_LDFLAGS :=
 endif
 
-CFLAGS  ?= $(BASE_CFLAGS) $(REL_CFLAGS) $(LIBC_CFLAGS)
+override CFLAGS += $(BASE_CFLAGS) $(REL_CFLAGS) $(LIBC_CFLAGS)
 LDFLAGS ?= $(LIBC_LDFLAGS)
 
 # Paths
@@ -44,13 +44,22 @@ SRC := $(sort $(shell find $(SRC_DIR) -name '*.c'))
 OBJ := $(patsubst $(SRC_DIR)/%.c,$(OBJ_SUBDIR)/%.o,$(SRC))
 DEP := $(OBJ:.o=.d)
 
-.PHONY: all build local-build san-build check-build \
+.PHONY: all release install build local-build san-build check-build \
         docker-bleeding docker-normal docker-stable \
         docker-bleeding-musl docker-normal-musl docker-stable-musl \
         docker-static-musl clean clean-all
 
 # WAŻNE: Tu musi być wszystko w jednej linii lub poprawnie łamane backslashem
 all: local-build san-build check-build docker-bleeding docker-normal docker-stable docker-bleeding-musl docker-normal-musl docker-stable-musl docker-static-musl
+
+release: $(SRC)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o randix $(SRC)
+
+PREFIX ?= /usr/local
+BINDIR ?= $(PREFIX)/bin
+
+install:
+	install -Dm755 randix $(DESTDIR)$(BINDIR)/randix
 
 build: $(OUT)
 
