@@ -7,10 +7,7 @@ CC ?= gcc
 # Flags
 PROFILE ?= local
 
-ifeq ($(PROFILE),release)
-  BASE_CFLAGS := -Wall -Werror
-else
-  BASE_CFLAGS := -Wall -Wextra -Werror
+BASE_CFLAGS := -Wall -Wextra -Werror
 endif
 DEV_CFLAGS  := -Og -g3 -fno-omit-frame-pointer -fsanitize=address,undefined
 REL_CFLAGS  := -O2
