@@ -2,7 +2,7 @@ pkgname=randix
 version=1.0.0
 revision=1
 archs="*"
-build_style=makefile
+build_style=gnu-makefile
 make_build_target="release"
 make_install_args="PREFIX=/usr"
 short_desc="Matrix effect but the characters are all over the screen"
