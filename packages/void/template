@@ -1,0 +1,16 @@
+pkgname=randix
+version=1.0.0
+revision=1
+archs="*"
+build_style=makefile
+make_build_args="PROFILE=local LIBC=glibc"
+short_desc="Matrix effect but the characters are all over the screen."
+maintainer="Sqyd <138494523+Sqydev@users.noreply.github.com>"
+license="GPL-3.0"
+homepage="https://github.com/Sqydev/randix"
+distfiles="https://github.com/Sqydev/randix/archive/refs/tags/v1.0.0.tar.gz"
+checksum="ab62b5a4a8a5b580d99df755867407ff97b6fcdbf15614262aacd8d8ee765fc3"
+
+do_install() {
+    vbin compiled/normal/randix-normal-glibc randix
+}
