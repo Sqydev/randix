@@ -43,6 +43,7 @@ license="$license"
 homepage="$url"
 distfiles="$SRC_URL"
 checksum=$SRC_SHA256_SUM
+wrksrc="$name-$version"
 EOF
 
 echo "[INFO] Template generated at $VOID_OUT/template"
