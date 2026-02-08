@@ -1,5 +1,5 @@
 pkgname=randix
-version=1.0.1
+version=1.0.3
 revision=1
 archs="*"
 build_style=gnu-makefile
@@ -9,6 +9,6 @@ short_desc="Matrix effect but the characters are all over the screen"
 maintainer="Sqyd <138494523+Sqydev@users.noreply.github.com>"
 license="GPL-3.0-or-later"
 homepage="https://github.com/Sqydev/randix"
-distfiles="https://github.com/Sqydev/randix/archive/refs/tags/v1.0.1.tar.gz"
-checksum=fc976abbe6d3fc2e05eaf4317cbf6edec8b1288bbcdb48a3fa86280951194a97
-wrksrc="randix-1.0.1"
+distfiles="https://github.com/Sqydev/randix/archive/refs/tags/v1.0.3.tar.gz"
+checksum=0385ac0b94daefc03015fe37e391c56178842a5ff9d8a24857aa47a934924c0a
+wrksrc="randix-1.0.3"
