@@ -5,7 +5,11 @@ MAKEFLAGS += --no-builtin-rules --warn-undefined-variables
 CC ?= gcc
 
 # Flags
-BASE_CFLAGS := -Wall -Wextra -Werror
+ifeq($(PROFILE), release)
+  BASE_CFLAGS := -Wall -Werror
+else
+  BASE_CFLAGS := -Wall -Wextra -Werror
+endif
 DEV_CFLAGS  := -Og -g3 -fno-omit-frame-pointer -fsanitize=address,undefined
 REL_CFLAGS  := -O2
 
@@ -49,7 +53,6 @@ DEP := $(OBJ:.o=.d)
         docker-bleeding-musl docker-normal-musl docker-stable-musl \
         docker-static-musl clean clean-all
 
-# WAŻNE: Tu musi być wszystko w jednej linii lub poprawnie łamane backslashem
 all: local-build san-build check-build docker-bleeding docker-normal docker-stable docker-bleeding-musl docker-normal-musl docker-stable-musl docker-static-musl
 
 release: $(SRC)
