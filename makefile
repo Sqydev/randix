@@ -55,11 +55,8 @@ all: local-build san-build check-build docker-bleeding docker-normal docker-stab
 release: $(SRC)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o randix $(SRC)
 
-PREFIX ?= /usr/local
-BINDIR ?= $(PREFIX)/bin
-
 install:
-	install -Dm755 randix $(DESTDIR)$(BINDIR)/randix
+	install -Dm755 randix $(DESTDIR)$(PREFIX)/bin/randix
 
 build: $(OUT)
 
