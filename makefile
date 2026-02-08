@@ -5,7 +5,9 @@ MAKEFLAGS += --no-builtin-rules --warn-undefined-variables
 CC ?= gcc
 
 # Flags
-ifeq($(PROFILE), release)
+PROFILE ?= local
+
+ifeq ($(PROFILE),release)
   BASE_CFLAGS := -Wall -Werror
 else
   BASE_CFLAGS := -Wall -Wextra -Werror
@@ -13,7 +15,6 @@ endif
 DEV_CFLAGS  := -Og -g3 -fno-omit-frame-pointer -fsanitize=address,undefined
 REL_CFLAGS  := -O2
 
-PROFILE ?= local
 LIBC    ?= glibc
 
 ifeq ($(LIBC),static-musl)
