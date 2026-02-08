@@ -8,7 +8,6 @@ CC ?= gcc
 PROFILE ?= local
 
 BASE_CFLAGS := -Wall -Wextra -Werror
-endif
 DEV_CFLAGS  := -Og -g3 -fno-omit-frame-pointer -fsanitize=address,undefined
 REL_CFLAGS  := -O2
 
