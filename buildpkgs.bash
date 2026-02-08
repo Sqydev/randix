@@ -27,17 +27,14 @@ version=$version
 revision=$release
 archs="$arch"
 build_style=$build_style
-make_build_args="$make_build_args"
+make_build_target="$make_build_target"
+make_install_args="$make_install_args"
 short_desc="$summary"
 maintainer="$maintainer"
 license="$license"
 homepage="$url"
 distfiles="$SRC_URL"
-checksum="$SRC_SHA256_SUM"
-
-do_install() {
-    vbin compiled/normal/${name}-normal-glibc $name
-}
+checksum=$SRC_SHA256_SUM
 EOF
 
 echo "[INFO] Template generated at $VOID_OUT/template"

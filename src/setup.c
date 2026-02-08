@@ -10,7 +10,8 @@
 #include "./coredata.h"
 #include "./setup.h"
 #include "./signals.h"
-#include "backbuff.h"
+#include "./backbuff.h"
+#include "../version.h"
 
 void DataSetup() {
 	DATA.args.refreshRate = 62; // In ms
@@ -30,7 +31,7 @@ void DataSetup() {
 	DATA.args.charList = NULL;
 	DATA.args.colorList = NULL;
 
-	DATA.version = "1.0V\n";
+	DATA.version = get_version();
 }
 
 void OptsSetup(int *argc, char ***argv) {
