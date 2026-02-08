@@ -12,6 +12,14 @@ OUT="$(pwd)/packages"
 VOID_OUT="$OUT/void"
 
 SRC_SHA256_SUM=$(curl -Ls "$SRC_URL" | sha256sum | cut -d' ' -f1)
+TEMP_FILE="./v$version.tar.gz"
+if curl -LfsS "$SRC_URL" -o "$TEMP_FILE"; then
+    SRC_SHA256_SUM=$(sha256sum "$TEMP_FILE" | cut -d' ' -f1)
+    rm "$TEMP_FILE"
+else
+    echo "Can't download from $SRC_URL" >&2
+    exit 1
+fi
 
 echo "=== Starting build process ==="
 echo "Version: $version | Src hash: $SRC_SHA256_SUM"

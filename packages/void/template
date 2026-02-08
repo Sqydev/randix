@@ -9,5 +9,5 @@ short_desc="Matrix effect but the characters are all over the screen"
 maintainer="Sqyd <138494523+Sqydev@users.noreply.github.com>"
 license="GPL-3.0-or-later"
 homepage="https://github.com/Sqydev/randix"
-distfiles="https://github.com/Sqydev/randix/archive/refs/tags/v${version}.tar.gz"
-checksum=d5558cd419c8d46bdc958064cb97f963d1ea793866414c025906ec15033512ed
+distfiles="https://github.com/Sqydev/randix/archive/refs/tags/v1.0.0.tar.gz"
+checksum=ab62b5a4a8a5b580d99df755867407ff97b6fcdbf15614262aacd8d8ee765fc3
