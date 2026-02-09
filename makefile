@@ -55,7 +55,7 @@ all: local-build san-build check-build docker-bleeding docker-normal docker-stab
 release: $(SRC)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o randix $(SRC)
 
-PREFIX  ?= /usr/
+PREFIX  ?=
 DESTDIR ?=
 
 install:
