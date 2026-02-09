@@ -10,6 +10,7 @@ source ./package.conf
 
 OUT="$(pwd)/packages"
 VOID_OUT="$OUT/void"
+AUR_OUT="$OUT/aur"
 
 SRC_SHA256_SUM=$(curl -Ls "$SRC_URL" | sha256sum | cut -d' ' -f1)
 TEMP_FILE="./v$version.tar.gz"
@@ -26,7 +27,7 @@ echo "Version: $version | Src hash: $SRC_SHA256_SUM"
 mkdir -p "$OUT"
 
 # --- VOID LINUX ---
-echo "[3/5] Generating Void Template and .xbps package"
+echo "[1/5] Generating Void Template and .xbps package"
 mkdir -p "$VOID_OUT"
 
 cat > "$VOID_OUT/template" <<EOF
@@ -44,6 +45,7 @@ homepage="$url"
 distfiles="$SRC_URL"
 checksum=$SRC_SHA256_SUM
 wrksrc="$name-$version"
+
 EOF
 
 echo "[INFO] Template generated at $VOID_OUT/template"
@@ -61,3 +63,20 @@ xbps-create -A x86_64 \
 cd "$cdw"
 
 echo "[INFO] Void glibc package built: $VOID_OUT/bin/"
+
+echo "[2/5] Generating AUR package"
+mkdir -p "$AUR_OUT"
+
+cat > "$AUR_OUT/template" <<EOF
+pkgname=$name
+pkgver=$version
+pkgrel=$release
+pkgdesc="$summary."
+arch=($arch)
+url="$url"
+license=('$license')
+depends=($dependencies)
+
+EOF
+
+echo "[INFO] AUR package generated at $AUR_OUT/PKGBUILD"
