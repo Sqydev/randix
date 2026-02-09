@@ -62,7 +62,7 @@ xbps-create -A x86_64 \
 
 cd "$cdw"
 
-echo "[INFO] Void glibc package built: $VOID_OUT/bin/"
+echo "[INFO] Void glibc package built: $VOID_OUT/"
 
 echo "[2/5] Generating AUR package"
 mkdir -p "$AUR_OUT"
