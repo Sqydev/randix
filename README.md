@@ -26,8 +26,52 @@
 
 <h2 align="left">What is this?</h2>
 Randix is basically a random character filler for your terminal. You can think of it like the Matrix effect, but instead of characters falling down the console, they appear all over and "swarm" your terminal.
-<h2 align="left">Usage</h2>
+
 <h2 align="left">Installation</h2>
+
+<a href="https://repology.org/project/referencing/versions">
+    <img src="https://repology.org/badge/vertical-allrepos/randix.svg?columns=2" alt="Packaging status" align="right">
+</a>
+<h2 align="left">Installation</h2>
+
+<a href="https://repology.org/project/referencing/versions">
+    <img src="https://repology.org/badge/vertical-allrepos/randix.svg?columns=2" alt="Packaging status" align="right">
+</a>
+
+If your distribution’s package manager is listed on the right, you can install **randix** directly:
+
+```sh
+sudo YOUR-PACKAGE-MANAGER INSTALL-ARG randix
+```
+
+If your distribution is not listed, you can build and install the program manually using `make`.
+
+First, clone the repository:
+
+```sh
+git clone https://github.com/Sqydev/randix.git
+```
+
+Then go to the project directory:
+
+```sh
+cd path/to/randix
+```
+
+Build the project:
+
+```sh
+make release
+```
+
+Finally, install it:
+
+```sh
+sudo make install
+```
+
+<h2 align="left">Usage</h2>
+
 <h2 align="left">Building</h2>
 
 
