@@ -60,7 +60,7 @@ make release
 Finally, install it:
 
 ```sh
-sudo make install PREFIX=/usr/bin/
+sudo make install PREFIX=/usr/
 ```
 
 <h2 align="left">Usage</h2>
