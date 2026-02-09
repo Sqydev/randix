@@ -34,7 +34,7 @@ Randix is basically a random character filler for your terminal. You can think o
 If your distribution’s package manager is listed on the right, you can install **randix** directly:
 
 ```sh
-sudo YOUR-PACKAGE-MANAGER INSTALL-ARG randix
+sudo [YOUR-PACKAGE-MANAGER] [INSTALL-ARG] randix
 ```
 
 If your distribution is not listed, you can build and install the program manually using `make`.
@@ -60,14 +60,31 @@ make release
 Finally, install it:
 
 ```sh
+sudo make install PREFIX=[Directory where your bin/ is]
+```
+
+For 99% of systems it will just be:
+
+```sh
 sudo make install PREFIX=/usr
 ```
 
 <h2 align="left">Usage</h2>
 
+Usage is pretty easy. You just do:
+```sh
+randix [options]
+```
+
+For options explaining just get help"
+```sh
+randix -h
+```
+
 <h2 align="left">Building</h2>
 
 
-<br><br>Randix - random characters terminal filler
+<h2 align="left">License</h2>
+Randix - random characters terminal filler
 Copyright (C) 2026-present Sqydev/_Sqyd_/Sqyd/Wojciech
 License: gnu gpl 3.0
