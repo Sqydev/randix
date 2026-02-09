@@ -1,0 +1,20 @@
+pkgname=randix
+pkgver=1.0.5
+pkgrel=1
+pkgdesc="Terminal matrix-style effect"
+arch=('x86_64')
+url="https://github.com/Sqydev/randix"
+license=('GPL-3.0-or-later')
+depends=()
+source=("https://github.com/Sqydev/randix/archive/refs/tags/v1.0.5.tar.gz")
+sha256sums=('f5fd6c624df5966ea7ed2fb9da45cde05628d5d30a4c3081499f2684d04232e1')
+
+build() {
+    cd "randix-1.0.5"
+    make release
+}
+
+package() {
+    cd "$pkgname-$pkgver"
+    make DESTDIR="$pkgdir" PREFIX=/usr install
+}

@@ -34,10 +34,11 @@ cat > "$VOID_OUT/template" <<EOF
 pkgname=$name
 version=$version
 revision=$release
-archs="$arch"
+archs="$arch_void"
 build_style=$build_style
 make_build_target="$make_build_target"
 make_install_args="$make_install_args"
+depends="$dependencies"
 short_desc="$summary"
 maintainer="$maintainer"
 license="$license"
@@ -45,7 +46,6 @@ homepage="$url"
 distfiles="$SRC_URL"
 checksum=$SRC_SHA256_SUM
 wrksrc="$name-$version"
-
 EOF
 
 echo "[INFO] Template generated at $VOID_OUT/template"
@@ -67,16 +67,27 @@ echo "[INFO] Void glibc package built: $VOID_OUT/"
 echo "[2/5] Generating AUR package"
 mkdir -p "$AUR_OUT"
 
-cat > "$AUR_OUT/template" <<EOF
+cat > "$AUR_OUT/PKGBUILD" <<EOF
 pkgname=$name
 pkgver=$version
 pkgrel=$release
-pkgdesc="$summary."
-arch=($arch)
+pkgdesc="$summary"
+arch=('$arch')
 url="$url"
 license=('$license')
-depends=($dependencies)
+depends=(${dependencies:-})
+source=("$SRC_URL")
+sha256sums=('$SRC_SHA256_SUM')
 
+build() {
+    cd "$name-$version"
+    make release
+}
+
+package() {
+    cd "\$pkgname-\$pkgver"
+    make DESTDIR="\$pkgdir" PREFIX=/usr install
+}
 EOF
 
 echo "[INFO] AUR package generated at $AUR_OUT/PKGBUILD"
