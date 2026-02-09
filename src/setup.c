@@ -82,7 +82,6 @@ void OptsSetup(int *argc, char ***argv) {
 					"        4  background fill (space character)\n\n"
 
 					"  -p, --palette <string>\n"
-					"      NOT DONE YET!!!!!!!!!!\n"
 					"      Specify color palette for randix to choose colors from.\n"
 					"      Format should be compatible with used color quality(-q),\n"
 					"      Each color should be separated with ',' and each channel should be separated with ;\n"
