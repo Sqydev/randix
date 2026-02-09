@@ -32,11 +32,6 @@ Randix is basically a random character filler for your terminal. You can think o
 <a href="https://repology.org/project/referencing/versions">
     <img src="https://repology.org/badge/vertical-allrepos/randix.svg?columns=2" alt="Packaging status" align="right">
 </a>
-<h2 align="left">Installation</h2>
-
-<a href="https://repology.org/project/referencing/versions">
-    <img src="https://repology.org/badge/vertical-allrepos/randix.svg?columns=2" alt="Packaging status" align="right">
-</a>
 
 If your distribution’s package manager is listed on the right, you can install **randix** directly:
 
