@@ -31,19 +31,22 @@ Randix is basically a random character filler for your terminal. You can think o
     <img src="https://repology.org/badge/vertical-allrepos/randix.svg?columns=2" alt="Packaging status" align="right">
 </a>
 
-If your distribution’s package manager is listed on the right, you can install **randix** directly:
+If your distribution’s package manager is listed on the right, you can install randix directly:
 
 ```sh
 sudo [YOUR-PACKAGE-MANAGER] [INSTALL-ARG] randix
 ```
 
-If your distribution is not listed, you can build and install the program manually using `make`.
+If your distribution is not listed, you can build and install randix manually using `make`.
 
 First, clone the repository:
 
 ```sh
 git clone https://github.com/Sqydev/randix.git
 ```
+
+or download a source archive for a specific version from
+GitHub Releases.
 
 Then go to the project directory:
 
@@ -81,7 +84,31 @@ For options explaining just get help"
 randix -h
 ```
 
+You can also build randix from a specific released version
+by downloading the source archive from GitHub Releases
+instead of cloning the repository.
+
 <h2 align="left">Building</h2>
+
+Randix uses a custom Makefile with multiple build profiles and libc targets.
+
+Below is a simplified overview of the main build targets:
+```sh
+# Release build
+make release
+
+# Development builds
+make local-build
+make san-build
+make check-build
+
+# Docker-based builds
+make docker-[profile]-[libc]
+```
+
+And here are all the profiles, libs, and all:
+Profiles: local, san, check  
+Libc targets: glibc, musl, static-musl
 
 
 <h2 align="left">License</h2>
