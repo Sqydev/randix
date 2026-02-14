@@ -63,11 +63,12 @@ void OptsSetup(int *argc, char ***argv) {
 		{"color-type", required_argument, NULL, 't'},
 		{"palette", required_argument, NULL, 'p'},
 		{"char-palette", required_argument, NULL, 'c'},
+		{"seed", required_argument, NULL, 's'},
 		{NULL, 0, NULL, 0}
 	};
 
 	int optchar;
-	while ((optchar = getopt_long(*argc, *argv, "hvr:q:t:c:p:", long_options, NULL)) != -1) {
+	while ((optchar = getopt_long(*argc, *argv, "hvr:q:t:c:p:s:", long_options, NULL)) != -1) {
 		switch (optchar) {
 			case 'v': {
 				DATA.writeCode = write(STDOUT_FILENO, DATA.version, strlen(DATA.version));
@@ -109,7 +110,10 @@ void OptsSetup(int *argc, char ***argv) {
 					"      But for -q 4 you'll do -p 000;000;000,255;255;255 for colors black and white\n\n"
 
 					"  -c, --char-palette <string>\n"
-					"      Make string for randix to choose characters from.\n";
+					"      Make string for randix to choose characters from.\n\n"
+
+					"  -s, --seed <int>\n"
+					"      Specyfy seed.\n";
 
 				DATA.writeCode = write(STDOUT_FILENO, help, strlen(help));
 				exit(EXIT_SUCCESS);
@@ -183,6 +187,12 @@ void OptsSetup(int *argc, char ***argv) {
 					i++;
 					colorToken = strtok_r(NULL, ",", &saveptr1);
 				}
+
+				break;
+			}
+
+			case 's': {
+				srand(atoi(optarg));
 
 				break;
 			}
