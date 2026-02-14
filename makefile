@@ -2,8 +2,6 @@
 MAKEFLAGS += --no-builtin-rules --warn-undefined-variables
 .SUFFIXES:
 
-CC ?= gcc
-
 # Flags
 PROFILE ?= local
 
@@ -13,12 +11,28 @@ REL_CFLAGS  := -O2
 
 LIBC    ?= glibc
 
+CC ?= gcc
+
+ifeq ($(PROFILE),windows)
+  CC := x86_64-w64-mingw32-gcc
+  EXE_EXT := .exe
+else
+  EXE_EXT :=
+endif
+
+
 ifeq ($(LIBC),static-musl)
   LIBC_CFLAGS  := -static
   LIBC_LDFLAGS := -static
 else
   LIBC_CFLAGS  :=
   LIBC_LDFLAGS :=
+endif
+
+ifeq ($(PROFILE),windows-static)
+  CC := x86_64-w64-mingw32-gcc
+  EXE_EXT := .exe
+  override LDFLAGS += -static -static-libgcc -static-libstdc++
 endif
 
 override CFLAGS += $(BASE_CFLAGS) $(REL_CFLAGS) $(LIBC_CFLAGS)
@@ -38,7 +52,7 @@ else
   BIN_SUBDIR := test
 endif
 
-OUT := $(BIN_DIR)/$(BIN_SUBDIR)/$(TARGET)-$(PROFILE)-$(LIBC)
+OUT := $(BIN_DIR)/$(BIN_SUBDIR)/$(TARGET)-$(PROFILE)-$(LIBC)$(EXE_EXT)
 
 # Sources
 SRC := $(sort $(shell find $(SRC_DIR) -name '*.c'))
@@ -91,6 +105,18 @@ GID := $(shell id -g)
 DOCKER_USER := --rm -u $(UID):$(GID) -v "$(shell pwd)":/src -w /src
 DOCKER_ROOT := --rm -v "$(shell pwd)":/src -w /src
 FIX_PERMS   := ; chown -R $(UID):$(GID) $(OBJ_DIR) $(BIN_DIR)
+
+docker-windows:
+	docker run $(DOCKER_ROOT) debian:stable-slim sh -c "\
+		apt-get update && \
+		apt-get install -y --no-install-recommends mingw-w64 make gcc && \
+		$(MAKE) PROFILE=windows LIBC=glibc build $(FIX_PERMS)"
+
+docker-windows-static:
+	docker run $(DOCKER_ROOT) debian:stable-slim sh -c "\
+		apt-get update && \
+		apt-get install -y --no-install-recommends mingw-w64 make gcc && \
+		$(MAKE) PROFILE=windows-static LIBC=glibc build $(FIX_PERMS)"
 
 docker-bleeding:
 	docker run $(DOCKER_USER) gcc:latest $(MAKE) PROFILE=bleeding LIBC=glibc build
