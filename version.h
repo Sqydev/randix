@@ -4,7 +4,7 @@
 #include "./src/coredata.h"
 
 static inline char* get_version() {
-	return "v1.0.6\n";
+	return "v1.1.0\n";
 }
 
 #endif
