@@ -13,6 +13,7 @@ LIBC    ?= glibc
 
 CC ?= gcc
 STD ?= -std=c99
+POSIX_C_SRC ?= -D_POSIX_C_SOURCE=200809L
 
 ifeq ($(PROFILE),windows)
   CC := x86_64-w64-mingw32-gcc
@@ -36,7 +37,7 @@ ifeq ($(PROFILE),windows-static)
   override LDFLAGS += -static -static-libgcc -static-libstdc++
 endif
 
-override CFLAGS += $(BASE_CFLAGS) $(REL_CFLAGS) $(LIBC_CFLAGS) $(STD)
+override CFLAGS += $(BASE_CFLAGS) $(REL_CFLAGS) $(LIBC_CFLAGS) $(STD) $(POSIX_C_SRC)
 LDFLAGS ?= $(LIBC_LDFLAGS)
 
 # Paths
