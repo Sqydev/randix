@@ -32,6 +32,7 @@
 #include "./signals.h"
 #include "./backbuff.h"
 #include "../version.h"
+#include "utils.h"
 
 void DataSetup() {
 	DATA.args.refreshRate = 62; // In ms
@@ -52,6 +53,8 @@ void DataSetup() {
 	DATA.args.colorList = NULL;
 
 	DATA.version = get_version();
+
+	srand(GetTime());
 }
 
 void OptsSetup(int *argc, char ***argv) {
