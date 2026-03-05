@@ -34,10 +34,10 @@ endif
 ifeq ($(PROFILE),windows-static)
   CC := x86_64-w64-mingw32-gcc
   EXE_EXT := .exe
-  override LDFLAGS += -static -static-libgcc -static-libstdc++
+  LDFLAGS += -static -static-libgcc -static-libstdc++
 endif
 
-override CFLAGS += $(BASE_CFLAGS) $(REL_CFLAGS) $(LIBC_CFLAGS) $(STD) $(POSIX_C_SRC)
+CFLAGS += $(BASE_CFLAGS) $(REL_CFLAGS) $(LIBC_CFLAGS) $(STD) $(POSIX_C_SRC)
 LDFLAGS ?= $(LIBC_LDFLAGS)
 
 # Paths
@@ -69,13 +69,13 @@ DEP := $(OBJ:.o=.d)
 all: local-build san-build check-build docker-bleeding docker-normal docker-stable docker-bleeding-musl docker-normal-musl docker-stable-musl docker-static-musl
 
 release: $(SRC)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o randix $(SRC)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $(TARGET) $(SRC)
 
 PREFIX  ?=
 DESTDIR ?=
 
 install:
-	install -Dm755 randix $(DESTDIR)$(PREFIX)/bin/randix
+	install -Dm755 $(TARGET) $(DESTDIR)$(PREFIX)/bin/$(TARGET)
 
 build: $(OUT)
 
