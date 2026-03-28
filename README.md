@@ -109,9 +109,3 @@ make docker-[profile]-[libc]
 And here are all the profiles, libs, and all:
 Profiles: local, san, check  
 Libc targets: glibc, musl, static-musl
-
-
-<h2 align="left">License</h2>
-Randix - random characters terminal filler
-Copyright (C) 2026-present Sqydev/_Sqyd_/Sqyd/Wojciech
-License: gnu gpl 3.0
