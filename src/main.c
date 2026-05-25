@@ -63,7 +63,6 @@ void Randix() {
 			DATA.backbuff = realloc(DATA.backbuff, backbuffSize(&DATA));
 		}
 
-		// PinPointer becouse it sounds funny
 		int pinPointer = RenderFrame();
 		DATA.writeCode = write(STDOUT_FILENO, DATA.backbuff, pinPointer);
 
